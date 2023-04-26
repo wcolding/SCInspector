@@ -178,11 +178,11 @@ namespace SCInspector
             string curString;
             int nullIndex;
 
-            while (names.Count() < gNamesArray.count)
+            for (int i = 0; i < gNamesArray.count; i++)
             {
                 ProgressUpdate.progressType = ProgressType.Names;
                 ProgressUpdate.max = (int)gNamesArray.count;
-                ProgressUpdate.index = names.Count();
+                ProgressUpdate.index = i;
 
                 curEntry = (IntPtr)Memory.ReadUInt32(gNamesArray.contents + offset);
                 if (curEntry != IntPtr.Zero)
@@ -227,11 +227,11 @@ namespace SCInspector
 
             GameObject curObject;
 
-            while (objects.Count() < gObjectsArray.count)
+            for (int i = 0; i < gObjectsArray.count; i++)
             {
                 ProgressUpdate.progressType = ProgressType.Objects;
                 ProgressUpdate.max = (int)gObjectsArray.count;
-                ProgressUpdate.index = objects.Count();
+                ProgressUpdate.index = i;
 
                 curEntry = (IntPtr)Memory.ReadUInt32(gObjectsArray.contents + offset);
                 if (curEntry != IntPtr.Zero)
@@ -240,35 +240,37 @@ namespace SCInspector
                     if (!objects.ContainsKey(curEntryIndex))
                     {
                         curNameIndex = (int)Memory.ReadUInt32(curEntry + nameOffset);
+                        if ((curNameIndex > -1) && (curNameIndex < gNamesArray.count))
+                        {
+                            curObject = new GameObject();
+                            curObject.address = curEntry;
 
-                        curObject = new GameObject();
-                        curObject.address = curEntry;
+                            parentAddress = (IntPtr)Memory.ReadUInt32(curEntry + outerOffset);
+                            curObject.outerIndex = GetObjectIndexFromPtr(parentAddress);
 
-                        parentAddress = (IntPtr)Memory.ReadUInt32(curEntry + outerOffset);
-                        curObject.outerIndex = GetObjectIndexFromPtr(parentAddress);
+                            classAddress = (IntPtr)Memory.ReadUInt32(curEntry + classOffset);
+                            curObject.classIndex = GetObjectIndexFromPtr(classAddress);
 
-                        classAddress = (IntPtr)Memory.ReadUInt32(curEntry + classOffset);
-                        curObject.classIndex = GetObjectIndexFromPtr(classAddress);
+                            inheritAddress = (IntPtr)Memory.ReadUInt32(curEntry + superOffset);
+                            curObject.inheritedClassIndex = GetObjectIndexFromPtr(inheritAddress);
 
-                        inheritAddress = (IntPtr)Memory.ReadUInt32(curEntry + superOffset);
-                        curObject.inheritedClassIndex = GetObjectIndexFromPtr(inheritAddress);
+                            curObject.propertyData = SetPropertyData(curObject, curEntry);
 
-                        curObject.propertyData = SetPropertyData(curObject, curEntry);
+                            if (names.ContainsKey(curNameIndex))
+                                curObject.name = names[curNameIndex];
+                            else
+                                curObject.name = curNameIndex.ToString();
 
-                        if (names.ContainsKey(curNameIndex))
-                            curObject.name = names[curNameIndex];
-                        else
-                            curObject.name = curNameIndex.ToString();
+                            curObject.fullPath = GetFullPath(curObject);
 
-                        curObject.fullPath = GetFullPath(curObject);
+                            curObject.type = ObjectType.GameObject;
+                            linkerLoadValue = (int)Memory.ReadUInt32(curEntry + linkerLoadOffset);
+                            if (linkerLoadValue == 0)
+                                curObject.type = ObjectType.Instance;
 
-                        curObject.type = ObjectType.GameObject;
-                        linkerLoadValue = (int)Memory.ReadUInt32(curEntry + linkerLoadOffset);
-                        if (linkerLoadValue == 0)
-                            curObject.type = ObjectType.Instance;
-
-                        curObject.index = (int)(offset / 4);
-                        objects.Add(curEntryIndex, curObject);
+                            curObject.index = (int)(offset / 4);
+                            objects.Add(curEntryIndex, curObject);
+                        }
                     }
                 }
 
