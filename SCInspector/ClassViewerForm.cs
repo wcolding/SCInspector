@@ -13,10 +13,10 @@ namespace SCInspector
     public partial class ClassViewerForm : Form
     {
         private GameData gameData;
-        private uint index;
+        private int index;
         private GameObject gameObject;
 
-        public ClassViewerForm(uint _index, GameData _gameData)
+        public ClassViewerForm(int _index, GameData _gameData)
         {
             InitializeComponent();
             gameData = _gameData;

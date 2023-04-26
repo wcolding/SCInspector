@@ -121,7 +121,7 @@ namespace SCInspector
             ProgressUpdate.index = 0;
             ProgressUpdate.max = gameData.objects.Count();
 
-            foreach (KeyValuePair<uint, GameObject> obj in gameData.objects)
+            foreach (KeyValuePair<int, GameObject> obj in gameData.objects)
             {
                 ListViewItem currentItem = new ListViewItem();
                 currentItem.Text = obj.Value.fullPath;
@@ -214,8 +214,8 @@ namespace SCInspector
 
         private void objectsListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            uint index = 0;
-            if (uint.TryParse(objectsListView.SelectedItems[0].SubItems[1].Text, out index))
+            int index = 0;
+            if (int.TryParse(objectsListView.SelectedItems[0].SubItems[1].Text, out index))
             {
                 ClassViewerForm cvForm = new ClassViewerForm(index, gameData);
                 cvForm.Text = String.Format("Viewing {0}", objectsListView.SelectedItems[0].SubItems[0].Text);

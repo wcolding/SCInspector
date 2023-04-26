@@ -43,10 +43,10 @@ namespace SCInspector
         public IntPtr address;
         public string name;
         public string fullPath;
-        public uint index;
-        public uint classIndex;
-        public uint outerIndex;
-        public uint inheritedClassIndex;
+        public int index;
+        public int classIndex;
+        public int outerIndex;
+        public int inheritedClassIndex;
         public ObjectType type;
         public PropertyData propertyData;
     }
@@ -163,8 +163,8 @@ namespace SCInspector
 
     public class GameData
     {
-        public Dictionary<uint, string> names;
-        public Dictionary<uint, GameObject> objects;
+        public Dictionary<int, string> names;
+        public Dictionary<int, GameObject> objects;
         
         protected virtual void GetNames(TArray gNamesArray, bool isUnicode = false)
         {
@@ -172,22 +172,22 @@ namespace SCInspector
 
             int offset = 0;
             IntPtr curEntry;
-            uint curEntryIndex;
+            int curEntryIndex;
 
             byte[] stringBuffer = new byte[256];
             string curString;
             int nullIndex;
 
-            while (names.Count() < gNamesArray.count)
+            for (int i = 0; i < gNamesArray.count; i++)
             {
                 ProgressUpdate.progressType = ProgressType.Names;
                 ProgressUpdate.max = (int)gNamesArray.count;
-                ProgressUpdate.index = names.Count();
+                ProgressUpdate.index = i;
 
                 curEntry = (IntPtr)Memory.ReadUInt32(gNamesArray.contents + offset);
                 if (curEntry != IntPtr.Zero)
                 {
-                    curEntryIndex = Memory.ReadUInt32(curEntry);
+                    curEntryIndex = (int)Memory.ReadUInt32(curEntry);
                     if (!names.ContainsKey(curEntryIndex))
                     {
                         Memory.ReadProcessMemory(Memory.ProcessHandle, (IntPtr)(curEntry + stringOffset), stringBuffer, stringBuffer.Length, out Memory.outputPtr);
@@ -218,57 +218,59 @@ namespace SCInspector
             int offset = 0;
 
             IntPtr curEntry;
-            uint curEntryIndex;
-            uint curNameIndex;
+            int curEntryIndex;
+            int curNameIndex;
             IntPtr classAddress;
             IntPtr parentAddress;
             IntPtr inheritAddress;
-            uint linkerLoadValue = 0;
+            int linkerLoadValue = 0;
 
             GameObject curObject;
 
-            while (objects.Count() < gObjectsArray.count)
+            for (int i = 0; i < gObjectsArray.count; i++)
             {
                 ProgressUpdate.progressType = ProgressType.Objects;
                 ProgressUpdate.max = (int)gObjectsArray.count;
-                ProgressUpdate.index = objects.Count();
+                ProgressUpdate.index = i;
 
                 curEntry = (IntPtr)Memory.ReadUInt32(gObjectsArray.contents + offset);
                 if (curEntry != IntPtr.Zero)
                 {
-                    curEntryIndex = Memory.ReadUInt32(curEntry + indexOffset);
+                    curEntryIndex = (int)Memory.ReadUInt32(curEntry + indexOffset);
                     if (!objects.ContainsKey(curEntryIndex))
                     {
-                        curNameIndex = Memory.ReadUInt32(curEntry + nameOffset);
+                        curNameIndex = (int)Memory.ReadUInt32(curEntry + nameOffset);
+                        if ((curNameIndex > -1) && (curNameIndex < gNamesArray.count))
+                        {
+                            curObject = new GameObject();
+                            curObject.address = curEntry;
 
-                        curObject = new GameObject();
-                        curObject.address = curEntry;
+                            parentAddress = (IntPtr)Memory.ReadUInt32(curEntry + outerOffset);
+                            curObject.outerIndex = GetObjectIndexFromPtr(parentAddress);
 
-                        parentAddress = (IntPtr)Memory.ReadUInt32(curEntry + outerOffset);
-                        curObject.outerIndex = GetObjectIndexFromPtr(parentAddress);
+                            classAddress = (IntPtr)Memory.ReadUInt32(curEntry + classOffset);
+                            curObject.classIndex = GetObjectIndexFromPtr(classAddress);
 
-                        classAddress = (IntPtr)Memory.ReadUInt32(curEntry + classOffset);
-                        curObject.classIndex = GetObjectIndexFromPtr(classAddress);
+                            inheritAddress = (IntPtr)Memory.ReadUInt32(curEntry + superOffset);
+                            curObject.inheritedClassIndex = GetObjectIndexFromPtr(inheritAddress);
 
-                        inheritAddress = (IntPtr)Memory.ReadUInt32(curEntry + superOffset);
-                        curObject.inheritedClassIndex = GetObjectIndexFromPtr(inheritAddress);
+                            curObject.propertyData = SetPropertyData(curObject, curEntry);
 
-                        curObject.propertyData = SetPropertyData(curObject, curEntry);
+                            if (names.ContainsKey(curNameIndex))
+                                curObject.name = names[curNameIndex];
+                            else
+                                curObject.name = curNameIndex.ToString();
 
-                        if (names.ContainsKey(curNameIndex))
-                            curObject.name = names[curNameIndex];
-                        else
-                            curObject.name = curNameIndex.ToString();
+                            curObject.fullPath = GetFullPath(curObject);
 
-                        curObject.fullPath = GetFullPath(curObject);
+                            curObject.type = ObjectType.GameObject;
+                            linkerLoadValue = (int)Memory.ReadUInt32(curEntry + linkerLoadOffset);
+                            if (linkerLoadValue == 0)
+                                curObject.type = ObjectType.Instance;
 
-                        curObject.type = ObjectType.GameObject;
-                        linkerLoadValue = Memory.ReadUInt32(curEntry + linkerLoadOffset);
-                        if (linkerLoadValue == 0)
-                            curObject.type = ObjectType.Instance;
-
-                        curObject.index = (uint)(offset / 4);
-                        objects.Add(curEntryIndex, curObject);
+                            curObject.index = (int)(offset / 4);
+                            objects.Add(curEntryIndex, curObject);
+                        }
                     }
                 }
 
@@ -294,8 +296,8 @@ namespace SCInspector
 
         public GameData(GameEntry _info)
         {
-            names = new Dictionary<uint, string>();
-            objects = new Dictionary<uint, GameObject>();
+            names = new Dictionary<int, string>();
+            objects = new Dictionary<int, GameObject>();
             info = _info;
             RefreshObjects();
         }
@@ -326,7 +328,7 @@ namespace SCInspector
             if (objects.Count == 0)
                 return addresses.ToArray();
 
-            foreach (KeyValuePair<uint, GameObject> obj in objects)
+            foreach (KeyValuePair<int, GameObject> obj in objects)
             {
                 if (obj.Value.name == objectName)
                     addresses.Add(obj.Value.address);
@@ -339,7 +341,7 @@ namespace SCInspector
         {
             GameObject temp = new GameObject();
 
-            foreach (KeyValuePair<uint, GameObject> obj in objects)
+            foreach (KeyValuePair<int, GameObject> obj in objects)
             {
                 if (obj.Value.name == objectName)
                     return obj.Value;
@@ -350,11 +352,13 @@ namespace SCInspector
 
         public string GetClassName(GameObject gameObject) 
         {
+            if (gameObject.classIndex == -1)
+                return string.Empty;
+
             if (objects.ContainsKey(gameObject.classIndex))
-            {
                 return objects[gameObject.classIndex].name;
-            }
-            return "";
+
+            return string.Empty;
         }
 
         private bool isProperty(GameObject gameObject)
@@ -410,18 +414,18 @@ namespace SCInspector
             return new PropertyData();
         }
 
-        protected uint GetObjectIndexFromPtr(IntPtr ptr)
+        protected int GetObjectIndexFromPtr(IntPtr ptr)
         {
-            foreach (KeyValuePair<uint, GameObject> obj in objects)
+            foreach (KeyValuePair<int, GameObject> obj in objects)
             {
                 if (obj.Value.address == ptr)
                     return obj.Key;
             }
 
-            return 0;
+            return -1;
         }
 
-        protected string GetObjectName(uint index)
+        protected string GetObjectName(int index)
         {
             if (objects.ContainsKey(index))
                 return objects[index].name;
@@ -433,7 +437,7 @@ namespace SCInspector
         {
             string path = gameObject.name;
 
-            if ((gameObject.outerIndex != 0) && objects.ContainsKey(gameObject.outerIndex))
+            if ((gameObject.outerIndex > 0) && objects.ContainsKey(gameObject.outerIndex))
             {
                 path = string.Format("{0}.{1}", GetFullPath(objects[gameObject.outerIndex]), path);
             }
@@ -445,7 +449,7 @@ namespace SCInspector
         {
             List<GameObject> instances = new List<GameObject>();
 
-            foreach (KeyValuePair<uint, GameObject> obj in objects)
+            foreach (KeyValuePair<int, GameObject> obj in objects)
             {
                 if (GetObjectName(obj.Value.classIndex) == className)
                     instances.Add(obj.Value);
@@ -458,7 +462,7 @@ namespace SCInspector
         {
             List<GameObject> properties = new List<GameObject>();
 
-            foreach (KeyValuePair<uint, GameObject> obj in objects)
+            foreach (KeyValuePair<int, GameObject> obj in objects)
             {
                 if (objects.ContainsKey(obj.Value.outerIndex) && objects.ContainsKey(gameObject.index))
                 {
@@ -483,7 +487,7 @@ namespace SCInspector
                 return properties.ToArray();
 
             // Get the first layer of children of the class object
-            foreach (KeyValuePair<uint, GameObject> obj in objects)
+            foreach (KeyValuePair<int, GameObject> obj in objects)
             {
                 if (obj.Value.outerIndex == gameObject.classIndex)
                 {
