@@ -49,6 +49,7 @@
             searchClassLabel = new Label();
             addressSearchBox = new TextBox();
             searchAddressLabel = new Label();
+            viewNamesButton = new Button();
             mainFormRightClickContext.SuspendLayout();
             SuspendLayout();
             // 
@@ -217,12 +218,23 @@
             searchAddressLabel.Text = "Address";
             searchAddressLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
+            // viewNamesButton
+            // 
+            viewNamesButton.Location = new Point(454, 77);
+            viewNamesButton.Name = "viewNamesButton";
+            viewNamesButton.Size = new Size(158, 30);
+            viewNamesButton.TabIndex = 13;
+            viewNamesButton.Text = "View Names";
+            viewNamesButton.UseVisualStyleBackColor = true;
+            viewNamesButton.Click += viewNamesButton_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
             ClientSize = new Size(800, 450);
+            Controls.Add(viewNamesButton);
             Controls.Add(searchAddressLabel);
             Controls.Add(addressSearchBox);
             Controls.Add(searchClassLabel);
@@ -266,5 +278,6 @@
         private Label searchClassLabel;
         private TextBox addressSearchBox;
         private Label searchAddressLabel;
+        private Button viewNamesButton;
     }
 }

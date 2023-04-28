@@ -19,6 +19,7 @@ namespace SCInspector
             gamesDropdown.Enabled = true;
             hookGameButton.Enabled = true;
             refreshButton.Enabled = false;
+            viewNamesButton.Enabled = false;
 
             gamesDropdown.Items.Clear();
 
@@ -69,6 +70,7 @@ namespace SCInspector
             LockFilters();
             UpdateListView();
             refreshButton.Enabled = true;
+            viewNamesButton.Enabled = true;
         }
 
         public void SetMsgLabel(string msg)
@@ -106,10 +108,12 @@ namespace SCInspector
         private void refreshButton_Click(object sender, EventArgs e)
         {
             refreshButton.Enabled = false;
+            viewNamesButton.Enabled = false;
             LockFilters();
             gameData.RefreshObjects();
             UpdateListView();
             refreshButton.Enabled = true;
+            viewNamesButton.Enabled = true;
         }
 
         private void UpdateListView()
@@ -242,6 +246,12 @@ namespace SCInspector
         private void addressSearchBox_TextChanged(object sender, EventArgs e)
         {
             FilterListView();
+        }
+
+        private void viewNamesButton_Click(object sender, EventArgs e)
+        {
+            NamesViewerForm namesViewer = new NamesViewerForm(gameData);
+            namesViewer.Show();
         }
     }
 
