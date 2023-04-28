@@ -107,12 +107,12 @@ namespace SCInspector
 
         private void refreshButton_Click(object sender, EventArgs e)
         {
-            refreshButton.Enabled = false;
+            refreshButton.Enabled = false; 
             viewNamesButton.Enabled = false;
             LockFilters();
             gameData.RefreshObjects();
             UpdateListView();
-            refreshButton.Enabled = true;
+            refreshButton.Enabled = true; 
             viewNamesButton.Enabled = true;
         }
 
@@ -222,10 +222,9 @@ namespace SCInspector
             if (int.TryParse(objectsListView.SelectedItems[0].SubItems[1].Text, out index))
             {
                 ClassViewerForm cvForm = new ClassViewerForm(index, gameData);
-                cvForm.Text = String.Format("Viewing {0}", objectsListView.SelectedItems[0].SubItems[0].Text);
                 cvForm.Show();
             }
-            
+
         }
 
         private void RightClickCopy_Click(object sender, EventArgs e)
