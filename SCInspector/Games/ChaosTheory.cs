@@ -10,7 +10,7 @@ namespace SCInspector
     {
         public SC3GameData(GameEntry _info) : base(_info) { }
 
-        protected override void GetNames(TArray gNamesArray, bool isUnicode = false)
+        protected override void GetNames(TArray gNamesArray)
         {
             stringOffset = 0x0C;
             base.GetNames(gNamesArray);
@@ -25,6 +25,8 @@ namespace SCInspector
             classOffset = 0x24;
             superOffset = 0x28;
             propertyOffset = 0x44;
+            structTypeOffset = 0x54;
+            structNextPropertyOffset = 0x48;
             bitmaskOffset = 0x78;
             base.GetObjects(gObjectsArray);
         }

@@ -185,6 +185,45 @@ namespace SCInspector
             Memory.WriteProcessMemory(Memory.ProcessHandle, offset, BitConverter.GetBytes(value), 4, out outputPtr);
         }
 
+        public static float ReadFloat(IntPtr offset)
+        {
+            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, 4, out outputPtr);
+            return BitConverter.ToSingle(buffer, 0);
+        }
+
+        public static void WriteFloat(IntPtr offset, float value)
+        {
+            Memory.WriteProcessMemory(Memory.ProcessHandle, offset, BitConverter.GetBytes(value), 4, out outputPtr);
+        }
+
+        public static UInt32 ReadUInt8(IntPtr offset)
+        {
+            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, 1, out outputPtr);
+            return buffer[0];
+        }
+
+        public static void WriteUInt8(IntPtr offset, byte value)
+        {
+            byte[] newBuffer = new byte[1];
+            newBuffer[0] = value;
+            Memory.WriteProcessMemory(Memory.ProcessHandle, offset, newBuffer, 1, out outputPtr);
+        }
+
+        public static string ReadString(IntPtr offset, bool isUnicode = false)
+        {
+            string temp = string.Empty;
+            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, 256, out outputPtr);
+            if (isUnicode)
+                temp = Encoding.Unicode.GetString(buffer);
+            else 
+                temp = Encoding.UTF8.GetString(buffer);
+
+            int nullIndex = temp.IndexOf('\0');
+            if (nullIndex > -1)
+                temp = temp.Remove(nullIndex);
+
+            return temp;
+        }
     }
 
 }

@@ -10,7 +10,7 @@ namespace SCInspector
     {
         public SC5GameData(GameEntry _info) : base(_info) { }
 
-        protected override void GetNames(TArray gNamesArray, bool isUnicode = false)
+        protected override void GetNames(TArray gNamesArray)
         {
             stringOffset = 0x08;
             base.GetNames(gNamesArray);

@@ -10,10 +10,11 @@ namespace SCInspector
     {
         public SC2GameData(GameEntry _info) : base(_info) { }
 
-        protected override void GetNames(TArray gNamesArray, bool isUnicode = false)
+        protected override void GetNames(TArray gNamesArray)
         {
             stringOffset = 0x0C;
-            base.GetNames(gNamesArray, true);
+            unicode = true;
+            base.GetNames(gNamesArray);
         }
 
         protected override void GetObjects(TArray gObjectsArray)

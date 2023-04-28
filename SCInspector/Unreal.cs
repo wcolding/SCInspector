@@ -29,7 +29,8 @@ namespace SCInspector
         Name,
         Object,
         Pointer,
-        Struct
+        Struct,
+        String
     }
 
     public enum ObjectType
@@ -55,11 +56,29 @@ namespace SCInspector
     {
         public int offset = -1;
         public IntPtr calculated = IntPtr.Zero;
+        public PropertyType type;
     }
 
     public class BytePropertyData : PropertyData
     {
-        public byte value;
+        public byte value
+        {
+            get
+            {
+                if (calculated == IntPtr.Zero)
+                    return 0;
+
+                return (byte)Memory.ReadUInt8(calculated);
+            }
+
+            set
+            {
+                if (calculated == IntPtr.Zero)
+                    return;
+
+                Memory.WriteUInt8(calculated, value);
+            }
+        }
     }
 
     public class BoolPropertyData : PropertyData
@@ -116,6 +135,37 @@ namespace SCInspector
         }
     }
 
+    public class NamePropertyData : IntPropertyData { }
+
+    public class StrPropertyData : PropertyData
+    {
+        public TArray value
+        {
+            get
+            {
+                TArray nullTArray = new TArray() { contents = IntPtr.Zero, count = 0, max = 0 };
+
+                if (calculated == IntPtr.Zero)
+                    return nullTArray;
+
+                byte[] fstringBuffer = new byte[12];
+                Memory.ReadProcessMemory(Memory.ProcessHandle, calculated, fstringBuffer, 12, out Memory.outputPtr);
+                if (Memory.outputPtr != IntPtr.Zero)
+                {
+                    TArray output = new TArray();
+                    output.contents = (IntPtr)BitConverter.ToUInt32(fstringBuffer, 0);
+                    output.count = BitConverter.ToUInt32(fstringBuffer, 4);
+                    output.max = BitConverter.ToUInt32(fstringBuffer, 8);
+                    return output;
+                }
+
+                return nullTArray;
+            }
+
+            // set?
+        }
+    }
+
     public class FloatPropertyData : PropertyData
     {
         public float value
@@ -125,7 +175,7 @@ namespace SCInspector
                 if (calculated == IntPtr.Zero)
                     return -1;
 
-                return (float)Memory.ReadUInt32(calculated);
+                return Memory.ReadFloat(calculated);
             }
 
             set
@@ -138,35 +188,21 @@ namespace SCInspector
         }
     }
 
-    public class GameObjectInspector
-    {
-        public GameObject gameObject;
-        public List<GameObject> attachedObjects;
-        public List<GameObject> properties;
-
-        public GameObjectInspector(GameData _gameData, GameObject _gameObject) 
-        {
-            gameData = _gameData;
-            gameObject = _gameObject;
-            attachedObjects = new List<GameObject>();
-            properties = new List<GameObject>();
-        }
-
-        public void RecalculateProperties()
-        {
-
-        }
-
-        private GameData gameData;
-
-    }
+    public class ObjectPropertyData : IntPropertyData {}
 
     public class GameData
     {
         public Dictionary<int, string> names;
         public Dictionary<int, GameObject> objects;
+
+        public bool isUnicode
+        {
+            get { return unicode; }
+        }
+
+        protected bool unicode = false;
         
-        protected virtual void GetNames(TArray gNamesArray, bool isUnicode = false)
+        protected virtual void GetNames(TArray gNamesArray)
         {
             names.Clear();
 
@@ -176,7 +212,6 @@ namespace SCInspector
 
             byte[] stringBuffer = new byte[256];
             string curString;
-            int nullIndex;
 
             for (int i = 0; i < gNamesArray.count; i++)
             {
@@ -190,16 +225,7 @@ namespace SCInspector
                     curEntryIndex = (int)Memory.ReadUInt32(curEntry);
                     if (!names.ContainsKey(curEntryIndex))
                     {
-                        Memory.ReadProcessMemory(Memory.ProcessHandle, (IntPtr)(curEntry + stringOffset), stringBuffer, stringBuffer.Length, out Memory.outputPtr);
-                        if (isUnicode)
-                            curString = Encoding.Unicode.GetString(stringBuffer);
-                        else
-                            curString = Encoding.UTF8.GetString(stringBuffer);
-
-                        nullIndex = curString.IndexOf('\0');
-                        if (nullIndex > -1)
-                            curString = curString.Remove(nullIndex);
-
+                        curString = Memory.ReadString(curEntry + stringOffset, unicode);
                         names.Add(curEntryIndex, curString);
                     }
                 }
@@ -291,6 +317,8 @@ namespace SCInspector
         protected int classOffset;
         protected int superOffset;       // Class this inherits from
         protected int propertyOffset;
+        protected int structTypeOffset;
+        protected int structNextPropertyOffset;
         protected int bitmaskOffset;
         #endregion
 
@@ -375,11 +403,10 @@ namespace SCInspector
             {
                 switch (className)
                 {
-                    case "ArrayProperty":
-                        break;
                     case "BoolProperty":
                     {
                         BoolPropertyData pd = new BoolPropertyData();
+                        pd.type = PropertyType.Bool;
                         pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
                         pd.bitmask = Memory.ReadUInt32(curEntryPtr + bitmaskOffset);
                         return pd;
@@ -387,24 +414,49 @@ namespace SCInspector
                     case "ByteProperty":
                     {
                         BytePropertyData pd = new BytePropertyData();
+                        pd.type = PropertyType.Byte;
                         pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
                         return pd;
                     }
                     case "IntProperty":
                     {
                         IntPropertyData pd = new IntPropertyData();
+                        pd.type = PropertyType.Int;
                         pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
                         return pd;
                     }
                     case "FloatProperty":
                     {
                         FloatPropertyData pd = new FloatPropertyData();
+                        pd.type = PropertyType.Float;
+                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        return pd;
+                    }
+                    case "ObjectProperty":
+                    {
+                        ObjectPropertyData pd = new ObjectPropertyData();
+                        pd.type = PropertyType.Object;
+                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        return pd;
+                    }
+                    case "StrProperty":
+                    {
+                        StrPropertyData pd = new StrPropertyData();
+                        pd.type = PropertyType.String;
+                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        return pd;
+                    }
+                    case "NameProperty":
+                    {
+                        NamePropertyData pd = new NamePropertyData();
+                        pd.type = PropertyType.Name;
                         pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
                         return pd;
                     }
                     default:
                     {
                         PropertyData pd = new PropertyData();
+                        pd.type = PropertyType.None;
                         pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
                         return pd;
                     }
@@ -414,7 +466,7 @@ namespace SCInspector
             return new PropertyData();
         }
 
-        protected int GetObjectIndexFromPtr(IntPtr ptr)
+        public int GetObjectIndexFromPtr(IntPtr ptr)
         {
             foreach (KeyValuePair<int, GameObject> obj in objects)
             {
@@ -458,6 +510,19 @@ namespace SCInspector
             return instances.ToArray();
         }
 
+        public GameObject[] GetInstances(GameObject classObject)
+        {
+            List<GameObject> instances = new List<GameObject>();
+
+            foreach (KeyValuePair<int, GameObject> obj in objects)
+            {
+                if (obj.Value.classIndex == classObject.index)
+                    instances.Add(obj.Value);
+            }
+
+            return instances.ToArray();
+        }
+
         public GameObject[] GetProperties(GameObject gameObject)
         {
             List<GameObject> properties = new List<GameObject>();
@@ -478,36 +543,30 @@ namespace SCInspector
         {
             List<GameObject> properties = new List<GameObject>();
 
-            // Get the class object
-            GameObject classObject;
-
-            if (objects.ContainsKey(gameObject.classIndex))
-                classObject = objects[gameObject.classIndex];
-            else
-                return properties.ToArray();
-
-            // Get the first layer of children of the class object
+            // Get the first layer of children of this object
             foreach (KeyValuePair<int, GameObject> obj in objects)
             {
-                if (obj.Value.outerIndex == gameObject.classIndex)
+                if (obj.Value.outerIndex == gameObject.index)
                 {
                     properties.Add(obj.Value);
                 }
             }
 
+            // Get inherited class properties
+            GameObject inheritedClassObject;
 
-            // Get class properties
-            if (recursive && (gameObject.classIndex != 0))
+            if (recursive && (gameObject.inheritedClassIndex > -1))
             {
-                GameObject[] parentProperties = GetClassProperties(classObject, true);
-                foreach (GameObject pObj in parentProperties)
-                    properties.Add(pObj);
+                if (objects.ContainsKey(gameObject.inheritedClassIndex))
+                {
+                    inheritedClassObject = objects[gameObject.inheritedClassIndex];
+                    GameObject[] parentProperties = GetClassProperties(inheritedClassObject, true);
+                    foreach (GameObject pObj in parentProperties)
+                        properties.Add(pObj);
+                }
             }
 
             return properties.ToArray();
         }
-
-
-
     }
 }
