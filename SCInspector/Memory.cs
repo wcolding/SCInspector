@@ -172,11 +172,11 @@ namespace SCInspector
         public static IntPtr ModuleBase = IntPtr.Zero;
 
         public static IntPtr outputPtr = IntPtr.Zero;
-        private static byte[] buffer = new byte[256];
 
         public static UInt32 ReadUInt32(IntPtr offset)
         {
-            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, 4, out outputPtr);
+            byte[] buffer = new byte[4];
+            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
             return BitConverter.ToUInt32(buffer, 0);
         }
 
@@ -187,7 +187,8 @@ namespace SCInspector
 
         public static float ReadFloat(IntPtr offset)
         {
-            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, 4, out outputPtr);
+            byte[] buffer = new byte[4];
+            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
             return BitConverter.ToSingle(buffer, 0);
         }
 
@@ -198,7 +199,8 @@ namespace SCInspector
 
         public static UInt32 ReadUInt8(IntPtr offset)
         {
-            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, 1, out outputPtr);
+            byte[] buffer = new byte[1];
+            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
             return buffer[0];
         }
 
@@ -211,8 +213,9 @@ namespace SCInspector
 
         public static string ReadString(IntPtr offset, bool isUnicode = false)
         {
+            byte[] buffer = new byte[256];
             string temp = string.Empty;
-            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, 256, out outputPtr);
+            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
             if (isUnicode)
                 temp = Encoding.Unicode.GetString(buffer);
             else 
