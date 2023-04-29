@@ -212,7 +212,8 @@ namespace SCInspector
         {
             if (e.Button == MouseButtons.Right)
             {
-                mainFormRightClickContext.Show(Cursor.Position);
+                if (objectsListView.SelectedItems.Count > 0)
+                    mainFormRightClickContext.Show(Cursor.Position);
             }
         }
 
