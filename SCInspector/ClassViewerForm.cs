@@ -19,7 +19,8 @@ namespace SCInspector
         private GameObject gameObject;
         private List<GameObject> properties;
         private List<GameObject> selectedProperties;
-        private GameObject[] instances;
+        private GameObject[] instances; 
+        private List<ListViewItem> propertiesListViewCache = new List<ListViewItem>();
 
         public ClassViewerForm(int _index, GameData _gameData)
         {
@@ -62,6 +63,7 @@ namespace SCInspector
                 currentItem.Text = obj.fullPath;
                 currentItem.SubItems.Add(gameData.GetClassName(obj));
                 currentItem.SubItems.Add(obj.index.ToString());
+                propertiesListViewCache.Add(currentItem);
                 fullPropertiesListView.Items.Add(currentItem);
             }
         }
@@ -74,6 +76,7 @@ namespace SCInspector
                 if (property.fullPath == selected.Text)
                 {
                     fullPropertiesListView.Items.Remove(selected);
+                    propertiesListViewCache.Remove(selected);
                     selectedProperties.Add(property);
                     RecalculateInstanceProperties();
                 }
@@ -224,14 +227,51 @@ namespace SCInspector
             RecalculateInstanceProperties();
         }
 
+        private bool NameFilter(ListViewItem item)
+        {
+            if (nameSearchBox.Text == string.Empty)
+                return true;
+
+            if (item.Text.ToLower().Contains(nameSearchBox.Text.ToLower().Trim()))
+                return true;
+
+            return false;
+        }
+
+        private bool ClassFilter(ListViewItem item)
+        {
+            if (classSearchBox.Text == string.Empty)
+                return true;
+
+            if (item.SubItems[1].Text.ToLower().Contains(classSearchBox.Text.ToLower().Trim()))
+                return true;
+
+            return false;
+        }
+
+        private void FilterListView()
+        {
+            fullPropertiesListView.Items.Clear();
+
+            if ((nameSearchBox.Text == string.Empty) && (classSearchBox.Text == string.Empty))
+            {
+                fullPropertiesListView.Items.AddRange(propertiesListViewCache.ToArray());
+                return;
+            }
+
+            fullPropertiesListView.Items.AddRange(propertiesListViewCache.FindAll(NameFilter).FindAll(ClassFilter).ToArray());
+
+            ProgressUpdate.progressType = ProgressType.None;
+        }
+
         private void nameSearchBox_TextChanged(object sender, EventArgs e)
         {
-
+            FilterListView();
         }
 
         private void classSearchBox_TextChanged(object sender, EventArgs e)
         {
-
+            FilterListView();
         }
     }
 }
