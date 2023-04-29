@@ -39,14 +39,12 @@ namespace SCInspector
 
         private void ClassViewerForm_Load(object sender, EventArgs e)
         {
-            //int preferredInstanceIndex = -1;
             IntPtr preferredInstancePtr = IntPtr.Zero;
 
             if (gameObject.type == ObjectType.Instance)
             {
                 if (gameData.objects.ContainsKey(gameObject.classAddress))
                 {
-                    //preferredInstanceIndex = gameObject.index;
                     preferredInstancePtr = address;
                     gameObject = gameData.objects[gameObject.classAddress];
                 }

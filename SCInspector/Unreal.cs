@@ -247,9 +247,6 @@ namespace SCInspector
             IntPtr curEntry;
             int curEntryIndex;
             int curNameIndex;
-            IntPtr classAddress;
-            IntPtr parentAddress;
-            IntPtr inheritAddress;
             int linkerLoadValue = 0;
 
             GameObject curObject;
@@ -460,17 +457,6 @@ namespace SCInspector
 
             return new PropertyData();
         }
-
-        //public int GetObjectIndexFromPtr(IntPtr ptr)
-        //{
-        //    foreach (GameObjectEntry obj in objects)
-        //    {
-        //        if (obj.Value.address == ptr)
-        //            return obj.Key;
-        //    }
-
-        //    return -1;
-        //}
 
         protected string GetObjectName(IntPtr address)
         {
