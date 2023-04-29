@@ -49,7 +49,10 @@ namespace SCInspector
 
             UpdateInstances();
             if ((preferredInstanceIndex >= 0) && gameData.objects.ContainsKey(preferredInstanceIndex))
-                instanceSelection.SelectedIndex = instanceSelection.Items.IndexOf(gameData.objects[preferredInstanceIndex].fullPath);
+            {
+                GameObject instance = gameData.objects[preferredInstanceIndex];
+                instanceSelection.SelectedIndex = instanceSelection.Items.IndexOf(String.Format("{0}: {1}", instance.address.ToString("X8"), instance.fullPath));
+            }
 
             properties.AddRange(gameData.GetClassProperties(gameObject));
 
