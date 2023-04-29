@@ -1,5 +1,7 @@
 namespace SCInspector
 {
+    using GameObjectEntry = KeyValuePair<IntPtr, GameObject>;
+
     public partial class MainForm : Form
     {
         public MainForm()
@@ -125,12 +127,12 @@ namespace SCInspector
             ProgressUpdate.index = 0;
             ProgressUpdate.max = gameData.objects.Count();
 
-            foreach (KeyValuePair<int, GameObject> obj in gameData.objects)
+            foreach (GameObjectEntry obj in gameData.objects)
             {
                 ListViewItem currentItem = new ListViewItem();
                 currentItem.Text = obj.Value.fullPath;
-                currentItem.SubItems.Add(obj.Key.ToString());
-                currentItem.SubItems.Add(obj.Value.address.ToString("X8"));
+                currentItem.SubItems.Add(obj.Value.index.ToString());
+                currentItem.SubItems.Add(obj.Key.ToString("X8"));
                 currentItem.SubItems.Add(gameData.GetClassName(obj.Value));
                 if (obj.Value.propertyData.offset >= 0)
                     currentItem.SubItems.Add(obj.Value.propertyData.offset.ToString("X2"));
@@ -222,8 +224,15 @@ namespace SCInspector
             int index = 0;
             if (int.TryParse(objectsListView.SelectedItems[0].SubItems[1].Text, out index))
             {
-                ClassViewerForm cvForm = new ClassViewerForm(index, gameData);
-                cvForm.Show();
+                foreach (GameObjectEntry obj in gameData.objects)
+                {
+                    if (obj.Value.index == index)
+                    {
+                        ClassViewerForm cvForm = new ClassViewerForm(obj.Key, gameData);
+                        cvForm.Show();
+                        return;
+                    }
+                }
             }
 
         }

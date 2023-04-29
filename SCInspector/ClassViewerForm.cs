@@ -12,57 +12,61 @@ using System.Windows.Forms;
 
 namespace SCInspector
 {
+    using GameObjectEntry = KeyValuePair<IntPtr, GameObject>;
+
     public partial class ClassViewerForm : Form
     {
         private GameData gameData;
         private int index;
+        private IntPtr address;
         private GameObject gameObject;
-        private List<GameObject> properties;
-        private List<GameObject> selectedProperties;
-        private GameObject[] instances; 
+        private List<GameObjectEntry> properties;
+        private List<GameObjectEntry> selectedProperties;
+        private GameObjectEntry[] instances;
         private List<ListViewItem> propertiesListViewCache = new List<ListViewItem>();
 
-        public ClassViewerForm(int _index, GameData _gameData)
+        public ClassViewerForm(IntPtr _address, GameData _gameData)
         {
             InitializeComponent();
             gameData = _gameData;
-            index = _index;
-            if (gameData.objects.ContainsKey(index))
-                gameObject = gameData.objects[index];
+            address = _address;
+            if (gameData.objects.ContainsKey(address))
+                gameObject = gameData.objects[address];
 
-            properties = new List<GameObject>();
-            selectedProperties = new List<GameObject>();
+            properties = new List<GameObjectEntry>();
+            selectedProperties = new List<GameObjectEntry>();
         }
 
         private void ClassViewerForm_Load(object sender, EventArgs e)
         {
-            int preferredInstanceIndex = -1;
+            IntPtr preferredInstancePtr = IntPtr.Zero;
+
             if (gameObject.type == ObjectType.Instance)
             {
-                if (gameData.objects.ContainsKey(gameObject.classIndex))
+                if (gameData.objects.ContainsKey(gameObject.classAddress))
                 {
-                    preferredInstanceIndex = gameObject.index;
-                    gameObject = gameData.objects[gameObject.classIndex];
+                    preferredInstancePtr = address;
+                    gameObject = gameData.objects[gameObject.classAddress];
                 }
             }
 
             this.Text = String.Format("Viewing {0}", gameObject.fullPath);
 
             UpdateInstances();
-            if ((preferredInstanceIndex >= 0) && gameData.objects.ContainsKey(preferredInstanceIndex))
+            if ((preferredInstancePtr != IntPtr.Zero) && gameData.objects.ContainsKey(preferredInstancePtr))
             {
-                GameObject instance = gameData.objects[preferredInstanceIndex];
-                instanceSelection.SelectedIndex = instanceSelection.Items.IndexOf(String.Format("{0}: {1}", instance.address.ToString("X8"), instance.fullPath));
+                GameObject instance = gameData.objects[preferredInstancePtr];
+                instanceSelection.SelectedIndex = instanceSelection.Items.IndexOf(String.Format("{0}: {1}", preferredInstancePtr.ToString("X8"), instance.fullPath));
             }
 
             properties.AddRange(gameData.GetClassProperties(gameObject));
 
-            foreach (GameObject obj in properties)
+            foreach (GameObjectEntry obj in properties)
             {
                 ListViewItem currentItem = new ListViewItem();
-                currentItem.Text = obj.fullPath;
-                currentItem.SubItems.Add(gameData.GetClassName(obj));
-                currentItem.SubItems.Add(obj.index.ToString());
+                currentItem.Text = obj.Value.fullPath;
+                currentItem.SubItems.Add(gameData.GetClassName(obj.Value));
+                currentItem.SubItems.Add(obj.Value.index.ToString());
                 propertiesListViewCache.Add(currentItem);
                 fullPropertiesListView.Items.Add(currentItem);
             }
@@ -71,9 +75,9 @@ namespace SCInspector
         private void FullPropertiesListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             ListViewItem selected = fullPropertiesListView.SelectedItems[0];
-            foreach (GameObject property in properties)
+            foreach (GameObjectEntry property in properties)
             {
-                if (property.fullPath == selected.Text)
+                if (property.Value.fullPath == selected.Text)
                 {
                     fullPropertiesListView.Items.Remove(selected);
                     propertiesListViewCache.Remove(selected);
@@ -85,20 +89,20 @@ namespace SCInspector
 
         private void SelPropertiesListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            GameObject selectedProperty = selectedProperties[selPropertiesListView.SelectedItems[0].Index];
-            PropertyType selectedType = selectedProperty.propertyData.type;
+            GameObjectEntry selectedProperty = selectedProperties[selPropertiesListView.SelectedItems[0].Index];
+            PropertyType selectedType = selectedProperty.Value.propertyData.type;
 
             switch (selectedType)
             {
                 case PropertyType.Bool:
                     {
                         DialogResult result = MessageBox.Show(
-                            String.Format("Setting BoolProperty '{0}'", selectedProperty.name),
-                            String.Format("Yes = True, No = False", selectedProperty.name),
+                            String.Format("Setting BoolProperty '{0}'", selectedProperty.Value.name),
+                            String.Format("Yes = True, No = False", selectedProperty.Value.index),
                             MessageBoxButtons.YesNoCancel,
                             MessageBoxIcon.Question);
 
-                        BoolPropertyData asBool = (BoolPropertyData)selectedProperty.propertyData;
+                        BoolPropertyData asBool = (BoolPropertyData)selectedProperty.Value.propertyData;
 
                         switch (result)
                         {
@@ -127,16 +131,16 @@ namespace SCInspector
         {
             instances = gameData.GetInstances(gameObject);
             instanceSelection.Items.Clear();
-            foreach (GameObject instance in instances)
-                instanceSelection.Items.Add(String.Format("{0}: {1}", instance.address.ToString("X8"), instance.fullPath));
+            foreach (GameObjectEntry instance in instances)
+                instanceSelection.Items.Add(String.Format("{0}: {1}", instance.Key.ToString("X8"), instance.Value.fullPath));
         }
 
         private void RecalculateInstanceProperties()
         {
             if (instanceSelection.SelectedItem != null)
             {
-                foreach (GameObject property in selectedProperties)
-                    property.propertyData.calculated = instances[instanceSelection.SelectedIndex].address + property.propertyData.offset;
+                foreach (GameObjectEntry property in selectedProperties)
+                    property.Value.propertyData.calculated = instances[instanceSelection.SelectedIndex].Key + property.Value.propertyData.offset;
             }
 
             PopulateSelPropertiesListView();
@@ -145,41 +149,37 @@ namespace SCInspector
         private void PopulateSelPropertiesListView()
         {
             selPropertiesListView.Items.Clear();
-            foreach (GameObject property in selectedProperties)
+            foreach (GameObjectEntry property in selectedProperties)
             {
                 ListViewItem currentItem = new ListViewItem();
-                currentItem.Text = property.fullPath;
-                currentItem.SubItems.Add(gameData.GetClassName(property));
-                currentItem.SubItems.Add(property.propertyData.offset.ToString("X2")); //offset
-                currentItem.SubItems.Add(property.propertyData.calculated.ToString("X8")); //address
-                switch (property.propertyData.type) //value
+                currentItem.Text = property.Value.fullPath;
+                currentItem.SubItems.Add(gameData.GetClassName(property.Value));
+                currentItem.SubItems.Add(property.Value.propertyData.offset.ToString("X2")); //offset
+                currentItem.SubItems.Add(property.Value.propertyData.calculated.ToString("X8")); //address
+                switch (property.Value.propertyData.type) //value
                 {
                     case PropertyType.Int:
-                        IntPropertyData asInt = (IntPropertyData)property.propertyData;
+                        IntPropertyData asInt = (IntPropertyData)property.Value.propertyData;
                         currentItem.SubItems.Add(asInt.value.ToString());
                         break;
                     case PropertyType.Bool:
-                        BoolPropertyData asBool = (BoolPropertyData)property.propertyData;
+                        BoolPropertyData asBool = (BoolPropertyData)property.Value.propertyData;
                         currentItem.SubItems.Add(asBool.value.ToString());
                         break;
                     case PropertyType.Byte:
-                        BytePropertyData asByte = (BytePropertyData)property.propertyData;
+                        BytePropertyData asByte = (BytePropertyData)property.Value.propertyData;
                         currentItem.SubItems.Add(String.Format("0x{0}", asByte.value.ToString("X2")));
                         break;
                     case PropertyType.Float:
-                        FloatPropertyData asFloat = (FloatPropertyData)property.propertyData;
+                        FloatPropertyData asFloat = (FloatPropertyData)property.Value.propertyData;
                         currentItem.SubItems.Add(String.Format("{0}f", asFloat.value.ToString("0.0")));
                         break;
                     case PropertyType.Object:
-                        ObjectPropertyData asObject = (ObjectPropertyData)property.propertyData;
-                        int objectPtr = asObject.value;
-                        if (objectPtr > 0)
+                        ObjectPropertyData asObject = (ObjectPropertyData)property.Value.propertyData;
+                        IntPtr objectPtr = (IntPtr)asObject.value;
+                        if (objectPtr != IntPtr.Zero)
                         {
-                            int objectIndex = gameData.GetObjectIndexFromPtr((IntPtr)objectPtr);
-                            if (objectIndex != -1)
-                                currentItem.SubItems.Add(gameData.objects[objectIndex].name);
-                            else
-                                currentItem.SubItems.Add("NULL");
+                            currentItem.SubItems.Add(gameData.objects[objectPtr].name);
                         }
                         else
                         {
@@ -187,12 +187,12 @@ namespace SCInspector
                         }
                         break;
                     case PropertyType.String:
-                        StrPropertyData asString = (StrPropertyData)property.propertyData;
+                        StrPropertyData asString = (StrPropertyData)property.Value.propertyData;
                         string value = Memory.ReadString(asString.value.contents, true); // FStrings always unicode?
                         currentItem.SubItems.Add(value);
                         break;
                     case PropertyType.Name:
-                        NamePropertyData asName = (NamePropertyData)property.propertyData;
+                        NamePropertyData asName = (NamePropertyData)property.Value.propertyData;
                         currentItem.SubItems.Add(gameData.names[asName.value]);
                         break;
                     default:
