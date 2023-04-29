@@ -20,10 +20,15 @@ namespace SCInspector
         protected override void GetObjects(TArray gObjectsArray)
         {
             indexOffset = 0x04;
+            linkerLoadOffset = 0x10;
             outerOffset = 0x18;
             nameOffset = 0x20;
             classOffset = 0x24;
+            superOffset = 0x2C;
             propertyOffset = 0x44;
+            structTypeOffset = 0x50;
+            structNextPropertyOffset = 0x48;
+            bitmaskOffset = 0x54;
             base.GetObjects(gObjectsArray);
         }
     }

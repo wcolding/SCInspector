@@ -26,7 +26,7 @@ namespace SCInspector
 
     public static class Games
     { 
-        public static GameEntry[] GameInfo = new GameEntry[2]
+        public static GameEntry[] GameInfo = new GameEntry[3]
         {
             new GameEntry() 
             { 
@@ -38,15 +38,15 @@ namespace SCInspector
                 gObjectsOffset = (IntPtr)0x19518C
             },
 
-            //new GameEntry()
-            //{
-            //    game = Game.PandoraTomorrow,
-            //    displayName = "Pandora Tomorrow",
-            //    windowName = "Tom Clancy's Splinter Cell: Pandora Tomorrow",
-            //    moduleName = "Core.dll",
-            //    gNamesOffset = (IntPtr)0x1A9384,
-            //    gObjectsOffset = (IntPtr)0x1AE0EC
-            //},
+            new GameEntry()
+            {
+                game = Game.PandoraTomorrow,
+                displayName = "Pandora Tomorrow",
+                windowName = "Tom Clancy's Splinter Cell: Pandora Tomorrow",
+                moduleName = "Core.dll",
+                gNamesOffset = (IntPtr)0x1A9384,
+                gObjectsOffset = (IntPtr)0x1AE0EC
+            },
 
             new GameEntry() 
             { 
