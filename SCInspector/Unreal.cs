@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
@@ -279,8 +280,6 @@ namespace SCInspector
                             else
                                 curObject.name = curNameIndex.ToString();
 
-                            curObject.fullPath = GetFullPath(curObject);
-
                             curObject.type = ObjectType.GameObject;
                             linkerLoadValue = (int)Memory.ReadUInt32(curEntry + linkerLoadOffset);
                             if (linkerLoadValue == 0)
@@ -294,6 +293,23 @@ namespace SCInspector
 
                 offset += 4;
             }
+
+            ResolvePaths();
+        }
+
+        protected void ResolvePaths()
+        {
+            Dictionary<IntPtr, GameObject> newObjects = new Dictionary<IntPtr, GameObject>();
+            GameObject curObj;
+
+            foreach (GameObjectEntry obj in objects)
+            {
+                curObj = obj.Value;
+                curObj.fullPath = GetFullPath(curObj);
+                newObjects.Add(obj.Key, curObj);
+            }
+
+            objects = newObjects;
         }
 
         private TArray gNamesArray;
