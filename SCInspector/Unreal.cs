@@ -185,12 +185,33 @@ namespace SCInspector
                 if (calculated == IntPtr.Zero)
                     return;
 
+                Memory.WriteFloat(calculated, value);
+            }
+        }
+    }
+
+    public class ObjectPropertyData : PropertyData
+    {
+        public IntPtr value
+        {
+            get
+            {
+                if (calculated == IntPtr.Zero)
+                    return IntPtr.Zero;
+
+                return (IntPtr)Memory.ReadUInt32(calculated);
+            }
+
+            set
+            {
+                if (calculated == IntPtr.Zero)
+                    return;
+
                 Memory.WriteUInt32(calculated, (uint)value);
             }
         }
     }
 
-    public class ObjectPropertyData : IntPropertyData {}
 
     public class GameData
     {
