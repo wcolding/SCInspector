@@ -211,7 +211,7 @@ namespace SCInspector
             }
         }
     }
-
+        
 
     public class GameData
     {

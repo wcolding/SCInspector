@@ -95,36 +95,49 @@ namespace SCInspector
             switch (selectedType)
             {
                 case PropertyType.Bool:
+                {
+                    DialogResult result = MessageBox.Show(
+                        String.Format("Setting BoolProperty '{0}'", selectedProperty.Value.name),
+                        "Yes = True, No = False",
+                        MessageBoxButtons.YesNoCancel,
+                        MessageBoxIcon.Question);
+
+                    BoolPropertyData asBool = (BoolPropertyData)selectedProperty.Value.propertyData;
+
+                    switch (result)
                     {
-                        DialogResult result = MessageBox.Show(
-                            String.Format("Setting BoolProperty '{0}'", selectedProperty.Value.name),
-                            String.Format("Yes = True, No = False", selectedProperty.Value.index),
-                            MessageBoxButtons.YesNoCancel,
-                            MessageBoxIcon.Question);
-
-                        BoolPropertyData asBool = (BoolPropertyData)selectedProperty.Value.propertyData;
-
-                        switch (result)
-                        {
-                            case DialogResult.Yes:
-                                asBool.value = true;
-                                RecalculateInstanceProperties();
-                                break;
-                            case DialogResult.No:
-                                asBool.value = false;
-                                RecalculateInstanceProperties();
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
+                        case DialogResult.Yes:
+                            asBool.value = true;
+                            RecalculateInstanceProperties();
+                            break;
+                        case DialogResult.No:
+                            asBool.value = false;
+                            RecalculateInstanceProperties();
+                            break;
+                        default:
+                            break;
                     }
+                    break;
+                }
+                case PropertyType.Int:
+                {
+                    IntPropertyData asInt = (IntPropertyData)selectedProperty.Value.propertyData;
+                    EditIntForm form = new EditIntForm(asInt, selectedProperty.Value.fullPath);
+                    form.Show();
+                    RecalculateInstanceProperties();
+                    break;
+                }
+                case PropertyType.Float:
+                {
+                    FloatPropertyData asFloat = (FloatPropertyData)selectedProperty.Value.propertyData;
+                    EditFloatForm form = new EditFloatForm(asFloat, selectedProperty.Value.fullPath);
+                    form.Show();
+                    RecalculateInstanceProperties();
+                    break;
+                }
                 default:
                     break;
             }
-            //ListViewItem selected = selPropertiesListView.SelectedItems[0];
-            //selPropertiesListView.Items.Remove(selected);
-            //fullPropertiesListView.Items.Insert(0, selected);
         }
 
         private void UpdateInstances()
