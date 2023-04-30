@@ -224,7 +224,15 @@ namespace SCInspector
         }
 
         protected bool unicode = false;
-        
+
+
+        public bool isLEADGame
+        {
+            get { return LEADGame; }
+        }
+
+        protected bool LEADGame = false;
+
         protected virtual void GetNames(TArray gNamesArray)
         {
             names.Clear();
@@ -245,7 +253,10 @@ namespace SCInspector
                 curEntry = (IntPtr)Memory.ReadUInt32(gNamesArray.contents + offset);
                 if (curEntry != IntPtr.Zero)
                 {
-                    curEntryIndex = (int)Memory.ReadUInt32(curEntry);
+                    if (!LEADGame)
+                        curEntryIndex = (int)Memory.ReadUInt32(curEntry);
+                    else
+                        curEntryIndex = i;
                     if (!names.ContainsKey(curEntryIndex))
                     {
                         curString = Memory.ReadString(curEntry + stringOffset, unicode);
@@ -374,7 +385,7 @@ namespace SCInspector
                 gObjectsArray.max = Memory.ReadUInt32(Memory.ModuleBase + info.gObjectsOffset + 8);
 
                 GetNames(gNamesArray);
-                GetObjects(gObjectsArray);
+                //GetObjects(gObjectsArray);
                 ProgressUpdate.progressType = ProgressType.None;
             }
         }

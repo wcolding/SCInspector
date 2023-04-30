@@ -26,7 +26,7 @@ namespace SCInspector
 
     public static class Games
     { 
-        public static GameEntry[] GameInfo = new GameEntry[3]
+        public static GameEntry[] GameInfo = new GameEntry[4]
         {
             new GameEntry() 
             { 
@@ -78,15 +78,15 @@ namespace SCInspector
             //    gObjectsOffset = (IntPtr)0x1008FC8 // no
             //},
 
-            //new GameEntry()
-            //{
-            //    game = Game.ConvictionUbi,
-            //    displayName = "Conviction (Ubisoft)",
-            //    windowName = "Conviction",
-            //    moduleName = "Conviction_game.exe", // capital C for ubi
-            //    gNamesOffset = (IntPtr)0x101913C,
-            //    gObjectsOffset = (IntPtr)0x1009088
-            //},
+            new GameEntry()
+            {
+                game = Game.ConvictionUbi,
+                displayName = "Conviction (Ubisoft)",
+                windowName = "Conviction",
+                moduleName = "Conviction_game.exe", // capital C for ubi
+                gNamesOffset = (IntPtr)0x101913C,
+                gObjectsOffset = (IntPtr)0x1009088
+            },
 
             //new GameEntry() 
             //{ 
