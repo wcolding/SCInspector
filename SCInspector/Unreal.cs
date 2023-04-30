@@ -385,7 +385,7 @@ namespace SCInspector
                 gObjectsArray.max = Memory.ReadUInt32(Memory.ModuleBase + info.gObjectsOffset + 8);
 
                 GetNames(gNamesArray);
-                //GetObjects(gObjectsArray);
+                GetObjects(gObjectsArray);
                 ProgressUpdate.progressType = ProgressType.None;
             }
         }
@@ -436,6 +436,14 @@ namespace SCInspector
             return false;
         }
 
+        private void GetPropertyOffset(PropertyData pd, IntPtr curEntryPtr)
+        {
+            if (!LEADGame)
+                pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+            else
+                pd.offset = (int)Memory.ReadUInt16(curEntryPtr + propertyOffset);
+        }
+
         private PropertyData SetPropertyData(GameObject gameObject, IntPtr curEntryPtr)
         {
             string className = GetClassName(gameObject);
@@ -447,7 +455,7 @@ namespace SCInspector
                     {
                         BoolPropertyData pd = new BoolPropertyData();
                         pd.type = PropertyType.Bool;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         pd.bitmask = Memory.ReadUInt32(curEntryPtr + bitmaskOffset);
                         return pd;
                     }
@@ -455,49 +463,49 @@ namespace SCInspector
                     {
                         BytePropertyData pd = new BytePropertyData();
                         pd.type = PropertyType.Byte;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         return pd;
                     }
                     case "IntProperty":
                     {
                         IntPropertyData pd = new IntPropertyData();
                         pd.type = PropertyType.Int;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         return pd;
                     }
                     case "FloatProperty":
                     {
                         FloatPropertyData pd = new FloatPropertyData();
                         pd.type = PropertyType.Float;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         return pd;
                     }
                     case "ObjectProperty":
                     {
                         ObjectPropertyData pd = new ObjectPropertyData();
                         pd.type = PropertyType.Object;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         return pd;
                     }
                     case "StrProperty":
                     {
                         StrPropertyData pd = new StrPropertyData();
                         pd.type = PropertyType.String;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         return pd;
                     }
                     case "NameProperty":
                     {
                         NamePropertyData pd = new NamePropertyData();
                         pd.type = PropertyType.Name;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         return pd;
                     }
                     default:
                     {
                         PropertyData pd = new PropertyData();
                         pd.type = PropertyType.None;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         return pd;
                     }
                 }
