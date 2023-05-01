@@ -297,7 +297,7 @@ namespace SCInspector
                     if (!objects.ContainsKey(curEntryIndex))
                     {
                         curNameIndex = (int)Memory.ReadUInt32(curEntry + nameOffset);
-                        if ((curNameIndex > -1) && (curNameIndex < gNamesArray.count))
+                        if (curNameIndex > -1)
                         {
                             curObject = new GameObject();
 
@@ -307,12 +307,18 @@ namespace SCInspector
 
                             curObject.propertyData = SetPropertyData(curObject, curEntry);
 
+                            curObject.type = ObjectType.GameObject;
+
                             if (names.ContainsKey(curNameIndex))
                                 curObject.name = names[curNameIndex];
+                            else if (LEADGame)
+                            {
+                                curObject.name = GetClassName(curObject);
+                                curObject.type = ObjectType.Instance;
+                            }
                             else
                                 curObject.name = curNameIndex.ToString();
-
-                            curObject.type = ObjectType.GameObject;
+;
                             linkerLoadValue = (int)Memory.ReadUInt32(curEntry + linkerLoadOffset);
                             if (linkerLoadValue == 0)
                                 curObject.type = ObjectType.Instance;
