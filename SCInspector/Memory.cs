@@ -148,8 +148,7 @@ namespace SCInspector
         {
             IntPtr hwnd = FindWindowA(null, windowName);
             if (hwnd == IntPtr.Zero) return hwnd;
-
-            int pid = 0;
+            
             GetWindowThreadProcessId(hwnd, out pid);
             Process process = Process.GetProcessById(pid);
             if (process == null) return IntPtr.Zero;
@@ -167,6 +166,9 @@ namespace SCInspector
 
             return IntPtr.Zero;
         }
+
+        public static int processID { get { return pid; } }
+        private static int pid = 0;
 
         public static IntPtr ProcessHandle = IntPtr.Zero;
         public static IntPtr ModuleBase = IntPtr.Zero;
