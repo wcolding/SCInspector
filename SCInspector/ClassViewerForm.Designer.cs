@@ -45,11 +45,14 @@
             refreshInstanceButton = new Button();
             nameSearchBox = new TextBox();
             classSearchBox = new TextBox();
+            autoRefreshWorker = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
             splitContainer.Panel1.SuspendLayout();
             splitContainer.Panel2.SuspendLayout();
             splitContainer.SuspendLayout();
             SuspendLayout();
+
+            this.FormClosing += ClassViewerForm_FormClosing;
             // 
             // NameFilterLabel
             // 
@@ -192,6 +195,10 @@
             classSearchBox.TabIndex = 8;
             classSearchBox.TextChanged += classSearchBox_TextChanged;
             // 
+            // autoRefreshWorker
+            // 
+            autoRefreshWorker.DoWork += autoRefreshWorker_DoWork;
+            // 
             // ClassViewerForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -235,5 +242,6 @@
         private Button refreshInstanceButton;
         private TextBox nameSearchBox;
         private TextBox classSearchBox;
+        private System.ComponentModel.BackgroundWorker autoRefreshWorker;
     }
 }

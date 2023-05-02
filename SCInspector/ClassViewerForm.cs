@@ -24,6 +24,7 @@ namespace SCInspector
         private List<GameObjectEntry> selectedProperties;
         private GameObjectEntry[] instances;
         private List<ListViewItem> propertiesListViewCache = new List<ListViewItem>();
+        private bool isClosable = false;
 
         public ClassViewerForm(IntPtr _address, GameData _gameData)
         {
@@ -70,6 +71,11 @@ namespace SCInspector
                 propertiesListViewCache.Add(currentItem);
                 fullPropertiesListView.Items.Add(currentItem);
             }
+
+            isClosable = false;
+            autoRefreshWorker.WorkerReportsProgress = true;
+            autoRefreshWorker.WorkerSupportsCancellation = true;
+            autoRefreshWorker.RunWorkerAsync();
         }
 
         private void FullPropertiesListView_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -89,55 +95,64 @@ namespace SCInspector
 
         private void SelPropertiesListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            GameObjectEntry selectedProperty = selectedProperties[selPropertiesListView.SelectedItems[0].Index];
-            PropertyType selectedType = selectedProperty.Value.propertyData.type;
+            if (selPropertiesListView.SelectedItems.Count < 1)
+                return;
 
-            switch (selectedType)
+            foreach (GameObjectEntry property in selectedProperties)
             {
-                case PropertyType.Bool:
+                if (property.Value.fullPath == selPropertiesListView.SelectedItems[0].Text)
                 {
-                    DialogResult result = MessageBox.Show(
-                        String.Format("Setting BoolProperty '{0}'", selectedProperty.Value.name),
-                        "Yes = True, No = False",
-                        MessageBoxButtons.YesNoCancel,
-                        MessageBoxIcon.Question);
-
-                    BoolPropertyData asBool = (BoolPropertyData)selectedProperty.Value.propertyData;
-
-                    switch (result)
+                    PropertyType selectedType = property.Value.propertyData.type;
+                    switch (selectedType)
                     {
-                        case DialogResult.Yes:
-                            asBool.value = true;
-                            RecalculateInstanceProperties();
-                            break;
-                        case DialogResult.No:
-                            asBool.value = false;
-                            RecalculateInstanceProperties();
-                            break;
+                        case PropertyType.Bool:
+                            {
+                                DialogResult result = MessageBox.Show(
+                                    String.Format("Setting BoolProperty '{0}'", property.Value.name),
+                                    "Yes = True, No = False",
+                                    MessageBoxButtons.YesNoCancel,
+                                    MessageBoxIcon.Question);
+
+                                BoolPropertyData asBool = (BoolPropertyData)property.Value.propertyData;
+
+                                switch (result)
+                                {
+                                    case DialogResult.Yes:
+                                        asBool.value = true;
+                                        RecalculateInstanceProperties();
+                                        break;
+                                    case DialogResult.No:
+                                        asBool.value = false;
+                                        RecalculateInstanceProperties();
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                break;
+                            }
+                        case PropertyType.Int:
+                            {
+                                IntPropertyData asInt = (IntPropertyData)property.Value.propertyData;
+                                EditIntForm form = new EditIntForm(asInt, property.Value.fullPath);
+                                form.Show();
+                                RecalculateInstanceProperties();
+                                break;
+                            }
+                        case PropertyType.Float:
+                            {
+                                FloatPropertyData asFloat = (FloatPropertyData)property.Value.propertyData;
+                                EditFloatForm form = new EditFloatForm(asFloat, property.Value.fullPath);
+                                form.Show();
+                                RecalculateInstanceProperties();
+                                break;
+                            }
                         default:
                             break;
                     }
-                    break;
+
+                    return;
                 }
-                case PropertyType.Int:
-                {
-                    IntPropertyData asInt = (IntPropertyData)selectedProperty.Value.propertyData;
-                    EditIntForm form = new EditIntForm(asInt, selectedProperty.Value.fullPath);
-                    form.Show();
-                    RecalculateInstanceProperties();
-                    break;
-                }
-                case PropertyType.Float:
-                {
-                    FloatPropertyData asFloat = (FloatPropertyData)selectedProperty.Value.propertyData;
-                    EditFloatForm form = new EditFloatForm(asFloat, selectedProperty.Value.fullPath);
-                    form.Show();
-                    RecalculateInstanceProperties();
-                    break;
-                }
-                default:
-                    break;
-            }
+            }            
         }
 
         private void UpdateInstances()
@@ -159,6 +174,64 @@ namespace SCInspector
             PopulateSelPropertiesListView();
         }
 
+        private void RefreshInstanceValues()
+        {
+            if (selPropertiesListView.Items.Count < 1)
+                return;
+
+            if (instanceSelection.SelectedItem != null)
+            {
+                foreach (GameObjectEntry property in selectedProperties)
+                    property.Value.propertyData.calculated = instances[instanceSelection.SelectedIndex].Key + property.Value.propertyData.offset;
+
+                for (int i = 0; i < selectedProperties.Count; i++)
+                {
+                    switch (selectedProperties[i].Value.propertyData.type)
+                    {
+                        case PropertyType.Int:
+                            IntPropertyData asInt = (IntPropertyData)selectedProperties[i].Value.propertyData;
+                            selPropertiesListView.Items[i].SubItems[4].Text = asInt.value.ToString();
+                            break;
+                        case PropertyType.Bool:
+                            BoolPropertyData asBool = (BoolPropertyData)selectedProperties[i].Value.propertyData;
+                            selPropertiesListView.Items[i].SubItems[4].Text = asBool.value.ToString();
+                            break;
+                        case PropertyType.Byte:
+                            BytePropertyData asByte = (BytePropertyData)selectedProperties[i].Value.propertyData;
+                            selPropertiesListView.Items[i].SubItems[4].Text = String.Format("0x{0}", asByte.value.ToString("X2"));
+                            break;
+                        case PropertyType.Float:
+                            FloatPropertyData asFloat = (FloatPropertyData)selectedProperties[i].Value.propertyData;
+                            selPropertiesListView.Items[i].SubItems[4].Text = String.Format("{0}f", asFloat.value.ToString("0.0"));
+                            break;
+                        case PropertyType.Object:
+                            ObjectPropertyData asObject = (ObjectPropertyData)selectedProperties[i].Value.propertyData;
+                            IntPtr objectPtr = (IntPtr)asObject.value;
+                            if ((objectPtr != IntPtr.Zero) && (gameData.objects.ContainsKey(objectPtr)))
+                            {
+                                selPropertiesListView.Items[i].SubItems[4].Text = gameData.objects[objectPtr].fullPath;
+                            }
+                            else
+                            {
+                                selPropertiesListView.Items[i].SubItems[4].Text = "null";
+                            }
+                            break;
+                        case PropertyType.String:
+                            StrPropertyData asString = (StrPropertyData)selectedProperties[i].Value.propertyData;
+                            string value = Memory.ReadString(asString.value.contents, true); // FStrings always unicode?
+                            selPropertiesListView.Items[i].SubItems[4].Text = value;
+                            break;
+                        case PropertyType.Name:
+                            NamePropertyData asName = (NamePropertyData)selectedProperties[i].Value.propertyData;
+                            selPropertiesListView.Items[i].SubItems[4].Text = gameData.names[asName.value];
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
         private void PopulateSelPropertiesListView()
         {
             selPropertiesListView.Items.Clear();
@@ -169,51 +242,11 @@ namespace SCInspector
                 currentItem.SubItems.Add(gameData.GetClassName(property.Value));
                 currentItem.SubItems.Add(property.Value.propertyData.offset.ToString("X2")); //offset
                 currentItem.SubItems.Add(property.Value.propertyData.calculated.ToString("X8")); //address
-                switch (property.Value.propertyData.type) //value
-                {
-                    case PropertyType.Int:
-                        IntPropertyData asInt = (IntPropertyData)property.Value.propertyData;
-                        currentItem.SubItems.Add(asInt.value.ToString());
-                        break;
-                    case PropertyType.Bool:
-                        BoolPropertyData asBool = (BoolPropertyData)property.Value.propertyData;
-                        currentItem.SubItems.Add(asBool.value.ToString());
-                        break;
-                    case PropertyType.Byte:
-                        BytePropertyData asByte = (BytePropertyData)property.Value.propertyData;
-                        currentItem.SubItems.Add(String.Format("0x{0}", asByte.value.ToString("X2")));
-                        break;
-                    case PropertyType.Float:
-                        FloatPropertyData asFloat = (FloatPropertyData)property.Value.propertyData;
-                        currentItem.SubItems.Add(String.Format("{0}f", asFloat.value.ToString("0.0")));
-                        break;
-                    case PropertyType.Object:
-                        ObjectPropertyData asObject = (ObjectPropertyData)property.Value.propertyData;
-                        IntPtr objectPtr = (IntPtr)asObject.value;
-                        if (objectPtr != IntPtr.Zero)
-                        {
-                            currentItem.SubItems.Add(gameData.objects[objectPtr].name);
-                        }
-                        else
-                        {
-                            currentItem.SubItems.Add("NULL");
-                        }
-                        break;
-                    case PropertyType.String:
-                        StrPropertyData asString = (StrPropertyData)property.Value.propertyData;
-                        string value = Memory.ReadString(asString.value.contents, true); // FStrings always unicode?
-                        currentItem.SubItems.Add(value);
-                        break;
-                    case PropertyType.Name:
-                        NamePropertyData asName = (NamePropertyData)property.Value.propertyData;
-                        currentItem.SubItems.Add(gameData.names[asName.value]);
-                        break;
-                    default:
-                        currentItem.SubItems.Add("temp");
-                        break;
-                }
+                currentItem.SubItems.Add("Value");                
                 selPropertiesListView.Items.Add(currentItem);
             }
+            
+            RefreshInstanceValues();
         }
 
         private void selPropertiesListView_SelectedIndexChanged(object sender, EventArgs e)
@@ -285,6 +318,34 @@ namespace SCInspector
         private void classSearchBox_TextChanged(object sender, EventArgs e)
         {
             FilterListView();
+        }
+
+        private void autoRefreshWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            while (!autoRefreshWorker.CancellationPending)
+            {
+                Thread.Sleep(100);
+                Invoke(() =>
+                {
+                    RefreshInstanceValues();
+                });
+            }
+
+            Invoke(() => 
+            { 
+                isClosable = true; 
+                this.Close();
+            });
+        }
+
+        private void ClassViewerForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!isClosable)
+            {
+                autoRefreshWorker.CancelAsync();
+                e.Cancel = true;
+                this.Enabled = false;
+            }
         }
     }
 }
