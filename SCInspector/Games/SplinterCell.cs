@@ -26,7 +26,7 @@ namespace SCInspector
             classOffset = 0x24;
             superOffset = 0x2C;
             propertyOffset = 0x44;
-            structPropertySizeOffset = 0x3C;
+            structPropertySizeOffset = 0x3A;
             structTypeOffset = 0x54;
             structNextPropertyOffset = 0x48;
             bitmaskOffset = 0x54;
