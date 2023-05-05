@@ -215,7 +215,7 @@ namespace SCInspector
     public class StructPropertyData : PropertyData
     {
         public IntPtr structClassPtr;
-        public int size = -1;
+        public short size = -1;
     }
         
 
@@ -502,7 +502,7 @@ namespace SCInspector
                         pd.type = PropertyType.Struct;
                         pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
                         if (structPropertySizeOffset != -1)
-                            pd.size = (int)Memory.ReadUInt32(curEntryPtr + structPropertySizeOffset);
+                            pd.size = (short)Memory.ReadUInt16(curEntryPtr + structPropertySizeOffset);
 
                         if (structTypeOffset != -1)
                             pd.structClassPtr = (IntPtr)Memory.ReadUInt32(curEntryPtr + structTypeOffset);
