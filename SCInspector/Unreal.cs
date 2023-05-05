@@ -1,15 +1,4 @@
-﻿using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Drawing;
-using System.Formats.Tar;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-
-namespace SCInspector
+﻿namespace SCInspector
 {
     using GameObjectEntry = KeyValuePair<IntPtr, GameObject>;
 

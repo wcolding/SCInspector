@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace SCInspector
 {
     internal static class Program

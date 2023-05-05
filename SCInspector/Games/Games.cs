@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace SCInspector
+﻿namespace SCInspector
 {
     public enum Game
     {
