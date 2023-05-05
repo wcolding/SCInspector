@@ -80,6 +80,9 @@ namespace SCInspector
 
         private void FullPropertiesListView_MouseDoubleClick(object sender, MouseEventArgs e)
         {
+            if (fullPropertiesListView.SelectedItems.Count == 0)
+                return;
+
             ListViewItem selected = fullPropertiesListView.SelectedItems[0];
             foreach (GameObjectEntry property in properties)
             {
