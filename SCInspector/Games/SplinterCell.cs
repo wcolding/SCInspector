@@ -26,7 +26,8 @@ namespace SCInspector
             classOffset = 0x24;
             superOffset = 0x2C;
             propertyOffset = 0x44;
-            structTypeOffset = 0x50;
+            structPropertySizeOffset = 0x3C;
+            structTypeOffset = 0x54;
             structNextPropertyOffset = 0x48;
             bitmaskOffset = 0x54;
             base.GetObjects(gObjectsArray);

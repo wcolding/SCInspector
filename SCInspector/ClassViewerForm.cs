@@ -60,7 +60,17 @@ namespace SCInspector
                 instanceSelection.SelectedIndex = instanceSelection.Items.IndexOf(String.Format("{0}: {1}", preferredInstancePtr.ToString("X8"), instance.fullPath));
             }
 
-            properties.AddRange(gameData.GetClassProperties(gameObject));
+            GameObjectEntry[] children = gameData.GetClassProperties(gameObject);
+            foreach (GameObjectEntry child in children)
+            {
+                if (child.Value.propertyData.type != PropertyType.None)
+                {
+                    if (child.Value.propertyData.type == PropertyType.Struct)
+                        properties.AddRange(gameData.GetStructProperties(child.Value));
+                    else
+                        properties.Add(child);
+                }
+            }
 
             foreach (GameObjectEntry obj in properties)
             {
