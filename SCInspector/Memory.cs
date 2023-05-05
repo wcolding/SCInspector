@@ -187,6 +187,18 @@ namespace SCInspector
             Memory.WriteProcessMemory(Memory.ProcessHandle, offset, BitConverter.GetBytes(value), 4, out outputPtr);
         }
 
+        public static UInt32 ReadUInt16(IntPtr offset)
+        {
+            byte[] buffer = new byte[2];
+            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
+            return BitConverter.ToUInt16(buffer, 0);
+        }
+
+        public static void WriteUInt16(IntPtr offset, ushort value)
+        {
+            Memory.WriteProcessMemory(Memory.ProcessHandle, offset, BitConverter.GetBytes(value), 2, out outputPtr);
+        }
+
         public static float ReadFloat(IntPtr offset)
         {
             byte[] buffer = new byte[4];
