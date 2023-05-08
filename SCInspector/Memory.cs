@@ -236,6 +236,16 @@ namespace SCInspector
 
             return temp;
         }
+
+        public static T ReadStructure<T>(IntPtr offset)
+        {
+            byte[] buffer = new byte[Marshal.SizeOf(typeof(T))];
+            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
+            GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+            T structure = Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
+            handle.Free();
+            return structure;
+        }
     }
 
 }

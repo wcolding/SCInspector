@@ -1,7 +1,9 @@
 ﻿namespace SCInspector
 {
+    using System.Runtime.InteropServices;
     using GameObjectEntry = KeyValuePair<IntPtr, GameObject>;
 
+    [StructLayout(LayoutKind.Sequential)]
     public struct TArray
     {
         public IntPtr contents;
@@ -359,15 +361,8 @@
         {
             if ((Memory.ProcessHandle != IntPtr.Zero) && (Memory.ModuleBase != IntPtr.Zero))
             {
-                gNamesArray = new TArray();
-                gNamesArray.contents = (IntPtr)Memory.ReadUInt32(Memory.ModuleBase + info.gNamesOffset);
-                gNamesArray.count = Memory.ReadUInt32(Memory.ModuleBase + info.gNamesOffset + 4);
-                gNamesArray.max = Memory.ReadUInt32(Memory.ModuleBase + info.gNamesOffset + 8);
-
-                gObjectsArray = new TArray();
-                gObjectsArray.contents = (IntPtr)Memory.ReadUInt32(Memory.ModuleBase + info.gObjectsOffset);
-                gObjectsArray.count = Memory.ReadUInt32(Memory.ModuleBase + info.gObjectsOffset + 4);
-                gObjectsArray.max = Memory.ReadUInt32(Memory.ModuleBase + info.gObjectsOffset + 8);
+                gNamesArray = Memory.ReadStructure<TArray>(Memory.ModuleBase + info.gNamesOffset);
+                gObjectsArray = Memory.ReadStructure<TArray>(Memory.ModuleBase + info.gObjectsOffset);
 
                 GetNames(gNamesArray);
                 GetObjects(gObjectsArray);
