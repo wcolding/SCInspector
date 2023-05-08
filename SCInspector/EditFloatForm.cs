@@ -26,7 +26,7 @@
         private void FloatVal_KeyPress(object sender, KeyPressEventArgs e)
         {
             // On pressing enter
-            if (e.KeyChar == (char)13)
+            if (e.KeyChar == (char)Keys.Enter)
                 ExitForm(true);
         }
 
