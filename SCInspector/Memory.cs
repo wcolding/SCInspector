@@ -170,46 +170,10 @@ namespace SCInspector
 
         public static IntPtr outputPtr = IntPtr.Zero;
 
-        public static UInt32 ReadUInt32(IntPtr offset)
-        {
-            byte[] buffer = new byte[4];
-            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
-            return BitConverter.ToUInt32(buffer, 0);
-        }
-
-        public static void WriteUInt32(IntPtr offset, uint value)
-        {
-            Memory.WriteProcessMemory(Memory.ProcessHandle, offset, BitConverter.GetBytes(value), 4, out outputPtr);
-        }
-
-        public static UInt16 ReadUInt16(IntPtr offset)
-        {
-            byte[] buffer = new byte[2];
-            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
-            return BitConverter.ToUInt16(buffer, 0);
-        }
-
-        public static void WriteUInt16(IntPtr offset, ushort value)
-        {
-            Memory.WriteProcessMemory(Memory.ProcessHandle, offset, BitConverter.GetBytes(value), 2, out outputPtr);
-        }
-
-        public static float ReadFloat(IntPtr offset)
-        {
-            byte[] buffer = new byte[4];
-            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
-            return BitConverter.ToSingle(buffer, 0);
-        }
-
-        public static void WriteFloat(IntPtr offset, float value)
-        {
-            Memory.WriteProcessMemory(Memory.ProcessHandle, offset, BitConverter.GetBytes(value), 4, out outputPtr);
-        }
-
         public static UInt32 ReadUInt8(IntPtr offset)
         {
             byte[] buffer = new byte[1];
-            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
+            ReadProcessMemory(ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
             return buffer[0];
         }
 
@@ -217,14 +181,50 @@ namespace SCInspector
         {
             byte[] newBuffer = new byte[1];
             newBuffer[0] = value;
-            Memory.WriteProcessMemory(Memory.ProcessHandle, offset, newBuffer, 1, out outputPtr);
+            WriteProcessMemory(ProcessHandle, offset, newBuffer, 1, out outputPtr);
+        }
+
+        public static UInt16 ReadUInt16(IntPtr offset)
+        {
+            byte[] buffer = new byte[2];
+            ReadProcessMemory(ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
+            return BitConverter.ToUInt16(buffer, 0);
+        }
+
+        public static void WriteUInt16(IntPtr offset, ushort value)
+        {
+            WriteProcessMemory(ProcessHandle, offset, BitConverter.GetBytes(value), 2, out outputPtr);
+        }
+
+        public static UInt32 ReadUInt32(IntPtr offset)
+        {
+            byte[] buffer = new byte[4];
+            ReadProcessMemory(ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
+            return BitConverter.ToUInt32(buffer, 0);
+        }
+
+        public static void WriteUInt32(IntPtr offset, uint value)
+        {
+            WriteProcessMemory(ProcessHandle, offset, BitConverter.GetBytes(value), 4, out outputPtr);
+        }
+
+        public static float ReadFloat(IntPtr offset)
+        {
+            byte[] buffer = new byte[4];
+            ReadProcessMemory(ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
+            return BitConverter.ToSingle(buffer, 0);
+        }
+
+        public static void WriteFloat(IntPtr offset, float value)
+        {
+            WriteProcessMemory(ProcessHandle, offset, BitConverter.GetBytes(value), 4, out outputPtr);
         }
 
         public static string ReadString(IntPtr offset, bool isUnicode = false)
         {
             byte[] buffer = new byte[256];
             string temp = string.Empty;
-            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
+            ReadProcessMemory(ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
             if (isUnicode)
                 temp = Encoding.Unicode.GetString(buffer);
             else 
@@ -240,7 +240,7 @@ namespace SCInspector
         public static T ReadStructure<T>(IntPtr offset)
         {
             byte[] buffer = new byte[Marshal.SizeOf(typeof(T))];
-            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
+            ReadProcessMemory(ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
             GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
             T structure = Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
             handle.Free();
