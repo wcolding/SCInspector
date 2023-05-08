@@ -43,6 +43,7 @@
             integerVal.Name = "integerVal";
             integerVal.Size = new Size(162, 23);
             integerVal.TabIndex = 0;
+            integerVal.KeyPress += integerVal_KeyPress;
             // 
             // valueLabel
             // 

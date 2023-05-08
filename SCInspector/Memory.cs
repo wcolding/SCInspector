@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SCInspector
 {
@@ -148,8 +143,7 @@ namespace SCInspector
         {
             IntPtr hwnd = FindWindowA(null, windowName);
             if (hwnd == IntPtr.Zero) return hwnd;
-
-            int pid = 0;
+            
             GetWindowThreadProcessId(hwnd, out pid);
             Process process = Process.GetProcessById(pid);
             if (process == null) return IntPtr.Zero;
@@ -168,6 +162,9 @@ namespace SCInspector
             return IntPtr.Zero;
         }
 
+        public static int processID { get { return pid; } }
+        private static int pid = 0;
+
         public static IntPtr ProcessHandle = IntPtr.Zero;
         public static IntPtr ModuleBase = IntPtr.Zero;
 
@@ -185,7 +182,7 @@ namespace SCInspector
             Memory.WriteProcessMemory(Memory.ProcessHandle, offset, BitConverter.GetBytes(value), 4, out outputPtr);
         }
 
-        public static UInt32 ReadUInt16(IntPtr offset)
+        public static UInt16 ReadUInt16(IntPtr offset)
         {
             byte[] buffer = new byte[2];
             Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
@@ -239,6 +236,15 @@ namespace SCInspector
 
             return temp;
         }
-    }
 
+        public static T ReadStructure<T>(IntPtr offset)
+        {
+            byte[] buffer = new byte[Marshal.SizeOf(typeof(T))];
+            Memory.ReadProcessMemory(Memory.ProcessHandle, offset, buffer, buffer.Length, out outputPtr);
+            GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+            T structure = Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
+            handle.Free();
+            return structure;
+        }
+    }
 }

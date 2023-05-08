@@ -1,18 +1,9 @@
-﻿using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Drawing;
-using System.Formats.Tar;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-
-namespace SCInspector
+﻿namespace SCInspector
 {
+    using System.Runtime.InteropServices;
     using GameObjectEntry = KeyValuePair<IntPtr, GameObject>;
 
+    [StructLayout(LayoutKind.Sequential)]
     public struct TArray
     {
         public IntPtr contents;
@@ -211,6 +202,26 @@ namespace SCInspector
             }
         }
     }
+
+    public class StructPropertyData : PropertyData
+    {
+        public IntPtr structClassPtr;
+        public short size = -1;
+    }
+
+    public class ArrayPropertyData : PropertyData
+    {
+        public TArray value
+        {
+            get
+            {
+                if (calculated == IntPtr.Zero)
+                    return new TArray() { contents = IntPtr.Zero, count = 0, max = 0 };
+
+                return Memory.ReadStructure<TArray>(calculated);
+            }
+        }
+    }
         
 
     public class GameData
@@ -363,7 +374,8 @@ namespace SCInspector
         protected int classOffset;
         protected int superOffset;       // Class this inherits from
         protected int propertyOffset;
-        protected int structTypeOffset;
+        protected int structTypeOffset = -1;
+        protected int structPropertySizeOffset = -1;
         protected int structNextPropertyOffset;
         protected int bitmaskOffset;
         #endregion
@@ -380,15 +392,8 @@ namespace SCInspector
         {
             if ((Memory.ProcessHandle != IntPtr.Zero) && (Memory.ModuleBase != IntPtr.Zero))
             {
-                gNamesArray = new TArray();
-                gNamesArray.contents = (IntPtr)Memory.ReadUInt32(Memory.ModuleBase + info.gNamesOffset);
-                gNamesArray.count = Memory.ReadUInt32(Memory.ModuleBase + info.gNamesOffset + 4);
-                gNamesArray.max = Memory.ReadUInt32(Memory.ModuleBase + info.gNamesOffset + 8);
-
-                gObjectsArray = new TArray();
-                gObjectsArray.contents = (IntPtr)Memory.ReadUInt32(Memory.ModuleBase + info.gObjectsOffset);
-                gObjectsArray.count = Memory.ReadUInt32(Memory.ModuleBase + info.gObjectsOffset + 4);
-                gObjectsArray.max = Memory.ReadUInt32(Memory.ModuleBase + info.gObjectsOffset + 8);
+                gNamesArray = Memory.ReadStructure<TArray>(Memory.ModuleBase + info.gNamesOffset);
+                gObjectsArray = Memory.ReadStructure<TArray>(Memory.ModuleBase + info.gObjectsOffset);
 
                 GetNames(gNamesArray);
                 GetObjects(gObjectsArray);
@@ -435,10 +440,17 @@ namespace SCInspector
             return string.Empty;
         }
 
-        private bool isProperty(GameObject gameObject)
+        private bool isPropertyInStruct(GameObject propertyGameObject)
         {
-            if (GetClassName(gameObject).Contains("Property"))
-                return true;
+            if (propertyGameObject.propertyData.type == PropertyType.None)
+                return false;
+
+            if (objects.ContainsKey(propertyGameObject.outerAddress))
+            {
+                if (objects[propertyGameObject.outerAddress].propertyData.type == PropertyType.Struct)
+                    return true;
+            }
+
             return false;
         }
 
@@ -457,6 +469,13 @@ namespace SCInspector
             {
                 switch (className)
                 {
+                    case "ArrayProperty":
+                    {
+                        ArrayPropertyData pd = new ArrayPropertyData();
+                        pd.type = PropertyType.Array;
+                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        return pd;
+                    }
                     case "BoolProperty":
                     {
                         BoolPropertyData pd = new BoolPropertyData();
@@ -505,6 +524,19 @@ namespace SCInspector
                         NamePropertyData pd = new NamePropertyData();
                         pd.type = PropertyType.Name;
                         GetPropertyOffset(pd, curEntryPtr);
+                        return pd;
+                    }
+                    case "StructProperty":
+                    {
+                        StructPropertyData pd = new StructPropertyData();
+                        pd.type = PropertyType.Struct;
+                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        if (structPropertySizeOffset != -1)
+                            pd.size = (short)Memory.ReadUInt16(curEntryPtr + structPropertySizeOffset);
+
+                        if (structTypeOffset != -1)
+                            pd.structClassPtr = (IntPtr)Memory.ReadUInt32(curEntryPtr + structTypeOffset);
+
                         return pd;
                     }
                     default:
@@ -583,6 +615,32 @@ namespace SCInspector
             return properties.ToArray();
         }
 
+        public GameObjectEntry[] GetStructProperties(GameObject gameObject)
+        {
+            List<GameObjectEntry> properties = new List<GameObjectEntry>();
+
+            if (gameObject.propertyData.type != PropertyType.Struct)
+                return properties.ToArray();
+
+            StructPropertyData asStruct = (StructPropertyData)gameObject.propertyData;
+
+            if (objects.ContainsKey(asStruct.structClassPtr))
+            {
+                properties.AddRange(GetProperties(objects[asStruct.structClassPtr]));
+            }
+
+            List<GameObjectEntry> newProperties = new List<GameObjectEntry>();
+            foreach (GameObjectEntry property in properties) 
+            {
+                GameObject newObj = CopyGameObject(property.Value);
+                newObj.fullPath = String.Format("{0}.{1}", gameObject.fullPath, newObj.name);
+                newObj.propertyData.offset += asStruct.offset;
+                newProperties.Add(new GameObjectEntry(property.Key, newObj));
+            }
+
+            return newProperties.ToArray();
+        }
+
         public GameObjectEntry[] GetClassProperties(GameObject gameObject, bool recursive = true)
         {
             List<GameObjectEntry> properties = new List<GameObjectEntry>();
@@ -615,5 +673,112 @@ namespace SCInspector
 
             return properties.ToArray();
         }
-    }
+
+        private GameObject CopyGameObject(GameObject gameObject)
+        {
+            GameObject newObj = new GameObject();
+            newObj.name = gameObject.name;
+            newObj.fullPath = gameObject.fullPath;
+            newObj.index = gameObject.index;
+            newObj.classAddress = gameObject.classAddress;
+            newObj.outerAddress = gameObject.outerAddress;
+            newObj.inheritedAddress = gameObject.inheritedAddress;
+            newObj.type = gameObject.type;
+
+            switch (gameObject.propertyData.type)
+            {
+                case PropertyType.Array:
+                {
+                    newObj.propertyData = new ArrayPropertyData();
+                    ArrayPropertyData original = (ArrayPropertyData)gameObject.propertyData;
+                    newObj.propertyData.offset = original.offset;
+                    newObj.propertyData.calculated = IntPtr.Zero;
+                    newObj.propertyData.type = original.type;
+                    break;
+                }
+                case PropertyType.Int:
+                {
+                    newObj.propertyData = new IntPropertyData();
+                    IntPropertyData original = (IntPropertyData)gameObject.propertyData;
+                    newObj.propertyData.offset = original.offset;
+                    newObj.propertyData.calculated = IntPtr.Zero;
+                    newObj.propertyData.type = original.type;
+                    break;
+                }
+                case PropertyType.Bool:
+                {
+                    newObj.propertyData = new BoolPropertyData();
+                    BoolPropertyData original = (BoolPropertyData)gameObject.propertyData;
+                    newObj.propertyData.offset = original.offset;
+                    newObj.propertyData.calculated = IntPtr.Zero;
+                    newObj.propertyData.type = original.type;
+                    break;
+                    }
+                case PropertyType.Byte:
+                {
+                    newObj.propertyData = new BytePropertyData();
+                    BytePropertyData original = (BytePropertyData)gameObject.propertyData;
+                    newObj.propertyData.offset = original.offset;
+                    newObj.propertyData.calculated = IntPtr.Zero;
+                    newObj.propertyData.type = original.type;
+                    break;
+                }
+                case PropertyType.Float:
+                {
+                    newObj.propertyData = new FloatPropertyData();
+                    FloatPropertyData original = (FloatPropertyData)gameObject.propertyData;
+                    newObj.propertyData.offset = original.offset;
+                    newObj.propertyData.calculated = IntPtr.Zero;
+                    newObj.propertyData.type = original.type;
+                    break;
+                }
+                case PropertyType.Name:
+                {
+                    newObj.propertyData = new NamePropertyData();
+                    NamePropertyData original = (NamePropertyData)gameObject.propertyData;
+                    newObj.propertyData.offset = original.offset;
+                    newObj.propertyData.calculated = IntPtr.Zero;
+                    newObj.propertyData.type = original.type;
+                    break;
+                }
+                case PropertyType.Object:
+                {
+                    newObj.propertyData = new ObjectPropertyData();
+                    ObjectPropertyData original = (ObjectPropertyData)gameObject.propertyData;
+                    newObj.propertyData.offset = original.offset;
+                    newObj.propertyData.calculated = IntPtr.Zero;
+                    newObj.propertyData.type = original.type;
+                    break;
+                }
+                case PropertyType.String:
+                {
+                    newObj.propertyData = new StrPropertyData();
+                    StrPropertyData original = (StrPropertyData)gameObject.propertyData;
+                    newObj.propertyData.offset = original.offset;
+                    newObj.propertyData.calculated = IntPtr.Zero;
+                    newObj.propertyData.type = original.type;
+                    break;
+                }
+                case PropertyType.Struct:
+                {
+                    newObj.propertyData = new StructPropertyData();
+                    StructPropertyData newPD = (StructPropertyData)newObj.propertyData;
+                    StructPropertyData original = (StructPropertyData)gameObject.propertyData;
+                    newPD.offset = original.offset;
+                    newPD.calculated = IntPtr.Zero;
+                    newPD.type = original.type;
+                    newPD.structClassPtr = original.structClassPtr;
+                    newPD.size = original.size;
+                    newObj.propertyData = newPD;
+                    break;
+                }
+                default:
+                    newObj.propertyData = new PropertyData();
+                    break;
+            }
+
+            return newObj;
+
+        }
+}
 }

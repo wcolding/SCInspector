@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SCInspector
+﻿namespace SCInspector
 {
     public class SC2GameData : GameData
     {
@@ -26,7 +20,8 @@ namespace SCInspector
             classOffset = 0x24;
             superOffset = 0x2C;
             propertyOffset = 0x44;
-            structTypeOffset = 0x50;
+            structPropertySizeOffset = 0x3A;
+            structTypeOffset = 0x54;
             structNextPropertyOffset = 0x48;
             bitmaskOffset = 0x54;
             base.GetObjects(gObjectsArray);
