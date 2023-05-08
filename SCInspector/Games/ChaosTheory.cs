@@ -19,6 +19,7 @@
             classOffset = 0x24;
             superOffset = 0x28;
             propertyOffset = 0x44;
+            structPropertySizeOffset = 0x36;
             structTypeOffset = 0x54;
             structNextPropertyOffset = 0x48;
             bitmaskOffset = 0x78;
