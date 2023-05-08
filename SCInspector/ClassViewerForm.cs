@@ -191,6 +191,10 @@ namespace SCInspector
                 {
                     switch (selectedProperties[i].Value.propertyData.type)
                     {
+                        case PropertyType.Array:
+                            ArrayPropertyData asArray = (ArrayPropertyData)selectedProperties[i].Value.propertyData;
+                            selPropertiesListView.Items[i].SubItems[4].Text = String.Format("0x{0}", asArray.value.contents.ToString("X8"));
+                            break;
                         case PropertyType.Int:
                             IntPropertyData asInt = (IntPropertyData)selectedProperties[i].Value.propertyData;
                             selPropertiesListView.Items[i].SubItems[4].Text = asInt.value.ToString();

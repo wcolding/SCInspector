@@ -208,6 +208,20 @@
         public IntPtr structClassPtr;
         public short size = -1;
     }
+
+    public class ArrayPropertyData : PropertyData
+    {
+        public TArray value
+        {
+            get
+            {
+                if (calculated == IntPtr.Zero)
+                    return new TArray() { contents = IntPtr.Zero, count = 0, max = 0 };
+
+                return Memory.ReadStructure<TArray>(calculated);
+            }
+        }
+    }
         
 
     public class GameData
@@ -430,6 +444,13 @@
             {
                 switch (className)
                 {
+                    case "ArrayProperty":
+                    {
+                        ArrayPropertyData pd = new ArrayPropertyData();
+                        pd.type = PropertyType.Array;
+                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        return pd;
+                    }
                     case "BoolProperty":
                     {
                         BoolPropertyData pd = new BoolPropertyData();
@@ -641,6 +662,15 @@
 
             switch (gameObject.propertyData.type)
             {
+                case PropertyType.Array:
+                {
+                    newObj.propertyData = new ArrayPropertyData();
+                    ArrayPropertyData original = (ArrayPropertyData)gameObject.propertyData;
+                    newObj.propertyData.offset = original.offset;
+                    newObj.propertyData.calculated = IntPtr.Zero;
+                    newObj.propertyData.type = original.type;
+                    break;
+                }
                 case PropertyType.Int:
                 {
                     newObj.propertyData = new IntPropertyData();
