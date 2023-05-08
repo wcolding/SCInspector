@@ -45,6 +45,7 @@
             floatVal.Name = "floatVal";
             floatVal.Size = new Size(162, 23);
             floatVal.TabIndex = 0;
+            floatVal.KeyPress += FloatVal_KeyPress;
             // 
             // valueLabel
             // 

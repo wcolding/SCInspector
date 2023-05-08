@@ -10,16 +10,30 @@
             valueLabel.Text = propertyName;
             pd = _pd;
             integerVal.Value = pd.value;
+            integerVal.Select(0, integerVal.Value.ToString().Length);
         }
 
         private void writeButton_Click(object sender, EventArgs e)
         {
-            pd.value = (int)integerVal.Value;
-            this.Close();
+            ExitForm(true);
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
         {
+            ExitForm();
+        }
+
+        private void integerVal_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // On pressing enter
+            if (e.KeyChar == (char)13)
+                ExitForm(true);
+        }
+
+        private void ExitForm(bool setValue = false)
+        {
+            if (setValue)
+                pd.value = (int)integerVal.Value;
             this.Close();
         }
     }
