@@ -90,8 +90,8 @@ jobs:
         ls
     
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
-    #- name: Upload build artifacts
-      #uses: actions/upload-artifact@v3
-      #with:
-        #name: Build
-        #path: ${{ github.workspace }}\\
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: Build
+        path: ${{ github.workspace }}\\SCInspector\\bin\\
