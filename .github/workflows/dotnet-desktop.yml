@@ -83,9 +83,14 @@ jobs:
       env:
         Configuration: ${{ matrix.configuration }} 
 
+    - name: Check dirs
+      run: |
+        echo ${{ github.workspace }}
+        echo $GITHUB_WORKSPACE
+    
     # Upload the MSIX package: https://github.com/marketplace/actions/upload-a-build-artifact
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: Build
-        path: ~/*
+    #- name: Upload build artifacts
+      #uses: actions/upload-artifact@v3
+      #with:
+        #name: Build
+        #path: ~/*
