@@ -54,12 +54,7 @@ namespace SCInspector
             foreach (GameObjectEntry child in children)
             {
                 if (child.Value.propertyData.type != PropertyType.None)
-                {
-                    if (child.Value.propertyData.type == PropertyType.Struct)
-                        properties.AddRange(gameData.GetStructProperties(child.Value));
-                    else
                         properties.Add(child);
-                }
             }
 
             foreach (GameObjectEntry obj in properties)
@@ -91,6 +86,8 @@ namespace SCInspector
                     fullPropertiesListView.Items.Remove(selected);
                     propertiesListViewCache.Remove(selected);
                     selectedProperties.Add(property);
+                    if (property.Value.propertyData.type == PropertyType.Struct)
+                        selectedProperties.AddRange(gameData.GetStructProperties(property.Value));
                     RecalculateInstanceProperties();
                 }
             }
@@ -231,6 +228,11 @@ namespace SCInspector
                         case PropertyType.Name:
                             NamePropertyData asName = (NamePropertyData)selectedProperties[i].Value.propertyData;
                             selPropertiesListView.Items[i].SubItems[4].Text = gameData.names[asName.value];
+                            break;
+                        case PropertyType.Struct:
+                            StructPropertyData asStruct = (StructPropertyData)selectedProperties[i].Value.propertyData;
+                            selPropertiesListView.Items[i].Font = new Font(selPropertiesListView.Items[i].Font, selPropertiesListView.Items[i].Font.Style | FontStyle.Bold);
+                            selPropertiesListView.Items[i].SubItems[4].Text = String.Format("Struct size: {0}", asStruct.size.ToString());
                             break;
                         default:
                             break;
