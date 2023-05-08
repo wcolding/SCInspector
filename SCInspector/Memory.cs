@@ -247,5 +247,4 @@ namespace SCInspector
             return structure;
         }
     }
-
 }

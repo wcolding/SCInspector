@@ -235,7 +235,15 @@
         }
 
         protected bool unicode = false;
-        
+
+
+        public bool isLEADGame
+        {
+            get { return LEADGame; }
+        }
+
+        protected bool LEADGame = false;
+
         protected virtual void GetNames(TArray gNamesArray)
         {
             names.Clear();
@@ -256,7 +264,10 @@
                 curEntry = (IntPtr)Memory.ReadUInt32(gNamesArray.contents + offset);
                 if (curEntry != IntPtr.Zero)
                 {
-                    curEntryIndex = (int)Memory.ReadUInt32(curEntry);
+                    if (!LEADGame)
+                        curEntryIndex = (int)Memory.ReadUInt32(curEntry);
+                    else
+                        curEntryIndex = i;
                     if (!names.ContainsKey(curEntryIndex))
                     {
                         curString = Memory.ReadString(curEntry + stringOffset, unicode);
@@ -297,7 +308,7 @@
                     if (!objects.ContainsKey(curEntryIndex))
                     {
                         curNameIndex = (int)Memory.ReadUInt32(curEntry + nameOffset);
-                        if ((curNameIndex > -1) && (curNameIndex < gNamesArray.count))
+                        if (curNameIndex > -1)
                         {
                             curObject = new GameObject();
 
@@ -307,12 +318,18 @@
 
                             curObject.propertyData = SetPropertyData(curObject, curEntry);
 
+                            curObject.type = ObjectType.GameObject;
+
                             if (names.ContainsKey(curNameIndex))
                                 curObject.name = names[curNameIndex];
+                            else if (LEADGame)
+                            {
+                                curObject.name = GetClassName(curObject);
+                                curObject.type = ObjectType.Instance;
+                            }
                             else
                                 curObject.name = curNameIndex.ToString();
-
-                            curObject.type = ObjectType.GameObject;
+;
                             linkerLoadValue = (int)Memory.ReadUInt32(curEntry + linkerLoadOffset);
                             if (linkerLoadValue == 0)
                                 curObject.type = ObjectType.Instance;
@@ -437,6 +454,14 @@
             return false;
         }
 
+        private void GetPropertyOffset(PropertyData pd, IntPtr curEntryPtr)
+        {
+            if (!LEADGame)
+                pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+            else
+                pd.offset = (int)Memory.ReadUInt16(curEntryPtr + propertyOffset);
+        }
+
         private PropertyData SetPropertyData(GameObject gameObject, IntPtr curEntryPtr)
         {
             string className = GetClassName(gameObject);
@@ -455,7 +480,7 @@
                     {
                         BoolPropertyData pd = new BoolPropertyData();
                         pd.type = PropertyType.Bool;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         pd.bitmask = Memory.ReadUInt32(curEntryPtr + bitmaskOffset);
                         return pd;
                     }
@@ -463,42 +488,42 @@
                     {
                         BytePropertyData pd = new BytePropertyData();
                         pd.type = PropertyType.Byte;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         return pd;
                     }
                     case "IntProperty":
                     {
                         IntPropertyData pd = new IntPropertyData();
                         pd.type = PropertyType.Int;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         return pd;
                     }
                     case "FloatProperty":
                     {
                         FloatPropertyData pd = new FloatPropertyData();
                         pd.type = PropertyType.Float;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         return pd;
                     }
                     case "ObjectProperty":
                     {
                         ObjectPropertyData pd = new ObjectPropertyData();
                         pd.type = PropertyType.Object;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         return pd;
                     }
                     case "StrProperty":
                     {
                         StrPropertyData pd = new StrPropertyData();
                         pd.type = PropertyType.String;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         return pd;
                     }
                     case "NameProperty":
                     {
                         NamePropertyData pd = new NamePropertyData();
                         pd.type = PropertyType.Name;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         return pd;
                     }
                     case "StructProperty":
@@ -518,7 +543,7 @@
                     {
                         PropertyData pd = new PropertyData();
                         pd.type = PropertyType.None;
-                        pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                        GetPropertyOffset(pd, curEntryPtr);
                         return pd;
                     }
                 }
