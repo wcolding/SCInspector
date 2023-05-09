@@ -1,16 +1,19 @@
 namespace SCInspector
 {
     using GameObjectEntry = KeyValuePair<IntPtr, GameObject>;
+    using static InputUtils;
 
     public partial class MainForm : Form
     {
         public MainForm()
         {
             InitializeComponent();
+            debouncedFilterListView = Debounce(500, () => Invoke(FilterListView));
         }
 
         public GameData gameData;
         private List<ListViewItem> listViewCache = new List<ListViewItem>();
+        private Action debouncedFilterListView;
 
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -247,17 +250,17 @@ namespace SCInspector
 
         private void searchBox_TextChanged(object sender, EventArgs e)
         {
-            FilterListView();
+            debouncedFilterListView();
         }
 
         private void classSearchBox_TextChanged(object sender, EventArgs e)
         {
-            FilterListView();
+            debouncedFilterListView();
         }
 
         private void addressSearchBox_TextChanged(object sender, EventArgs e)
         {
-            FilterListView();
+            debouncedFilterListView();
         }
 
         private void viewNamesButton_Click(object sender, EventArgs e)
