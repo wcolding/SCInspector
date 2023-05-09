@@ -79,7 +79,7 @@ jobs:
 
     # Build
     - name: Build the application
-      run: msbuild $env:Solution_Name /p:Configuration=$env:Configuration /p:OutputPath=${{ github.workspace }}/Build
+      run: msbuild $env:Solution_Name /p:Configuration=$env:Configuration
       env:
         Configuration: ${{ matrix.configuration }} 
 
