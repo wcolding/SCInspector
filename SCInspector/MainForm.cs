@@ -59,6 +59,9 @@ namespace SCInspector
                 case Game.ChaosTheory:
                     gameData = new SC3GameData(selectedGame);
                     break;
+                case Game.DoubleAgent:
+                    gameData = new SC4GameData(selectedGame);
+                    break;
                 //case Game.ConvictionSteam:
                 //    gameData = new SC5GameData(selectedGame);
                 //    break;

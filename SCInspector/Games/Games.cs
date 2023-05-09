@@ -24,7 +24,7 @@
 
     public static class Games
     { 
-        public static GameEntry[] GameInfo = new GameEntry[3]
+        public static GameEntry[] GameInfo = new GameEntry[4]
         {
             new GameEntry() 
             { 
@@ -56,15 +56,15 @@
                 gObjectsOffset = (IntPtr)0xA12084
             },
 
-            //new GameEntry() 
-            //{ 
-            //    game = Game.DoubleAgent,
-            //    displayName = "Double Agent v1",
-            //    windowName = "splintercell4.exe",
-            //    moduleName = "splintercell4.exe",
-            //    gNamesOffset = IntPtr.Zero,
-            //    gObjectsOffset = IntPtr.Zero
-            //},
+            new GameEntry()
+            {
+                game = Game.DoubleAgent,
+                displayName = "Double Agent v1",
+                windowName = "Tom Clancy's SplinterCell 4",
+                moduleName = "Core.dll",
+                gNamesOffset = (IntPtr)0x2D3A24,
+                gObjectsOffset = (IntPtr)0X2D7AC4
+            },
 
             //new GameEntry()
             //{
