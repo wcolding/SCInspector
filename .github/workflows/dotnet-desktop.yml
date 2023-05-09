@@ -95,5 +95,5 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: Build
-        path: ${{ github.workspace }}
+        name: Release-Build
+        path: ${{ github.workspace }}/bin/x86/Release/net7.0-windows/
