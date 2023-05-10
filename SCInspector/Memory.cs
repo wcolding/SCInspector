@@ -18,7 +18,7 @@ namespace SCInspector
         public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, Int32 nSize, out IntPtr lpNumberOfBytesWritten);
 
         [DllImport("user32.dll", SetLastError = true)]
-        static extern IntPtr FindWindowA(string lpClassName, string lpWindowName);
+        static extern IntPtr FindWindowA(string? lpClassName, string? lpWindowName);
 
         [DllImport("user32.dll", SetLastError = true)]
         static extern uint GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
@@ -241,11 +241,11 @@ namespace SCInspector
             return temp;
         }
 
-        public static T ReadStructure<T>(IntPtr offset)
+        public static T? ReadStructure<T>(IntPtr offset)
         {
             byte[] buffer = ReadBytes(offset, (uint)Marshal.SizeOf(typeof(T)));
             GCHandle handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-            T structure = Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
+            T? structure = Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
             handle.Free();
             return structure;
         }
