@@ -32,7 +32,7 @@ namespace SCInspector
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    unsafe class UObject
+    public unsafe class UObject
     {
         [FieldOffset(0)]
         public IntPtr vTable;
@@ -51,7 +51,7 @@ namespace SCInspector
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    unsafe class UField : UObject
+    public unsafe class UField : UObject
     {
         [FieldOffset(0x2C)]
         public IntPtr superField;
@@ -62,6 +62,19 @@ namespace SCInspector
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    unsafe class UProperty : UField { }
+    public unsafe class UProperty : UField
+    {
+        [FieldOffset(0x3A)]
+        public short size;
+        [FieldOffset(0x44)]
+        public IntPtr propertyOffset;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    public unsafe class UBoolProperty : UProperty
+    {
+        [FieldOffset(0x54)]
+        public int bitmask;
+    }
 
 }
