@@ -1,3 +1,5 @@
+using SCInspector.Unreal;
+
 namespace SCInspector
 {
     using GameObjectEntry = KeyValuePair<IntPtr, GameObject>;
