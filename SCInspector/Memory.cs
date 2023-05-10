@@ -89,7 +89,6 @@ namespace SCInspector
         static extern bool Module32Next(IntPtr hSnapshot, ref MODULEENTRY32 lpme);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         [SuppressUnmanagedCodeSecurity]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseHandle(IntPtr hObject);
