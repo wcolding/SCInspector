@@ -239,32 +239,25 @@
         protected virtual void GetNames(TArray gNamesArray)
         {
             names.Clear();
-
-            int offset = 0;
-            IntPtr curEntry;
             int curEntryIndex;
 
             byte[] stringBuffer = new byte[256];
             string curString;
 
-            for (int i = 0; i < gNamesArray.count; i++)
+            IntPtr[] namePtrs = Memory.ReadTArrayPtrs(gNamesArray);
+
+            foreach (IntPtr curEntry in namePtrs)
             {
                 ProgressUpdate.progressType = ProgressType.Names;
                 ProgressUpdate.max = (int)gNamesArray.count;
-                ProgressUpdate.index = i;
+                //ProgressUpdate.index = i;
 
-                curEntry = (IntPtr)Memory.ReadUInt32(gNamesArray.contents + offset);
-                if (curEntry != IntPtr.Zero)
+                curEntryIndex = (int)Memory.ReadUInt32(curEntry);
+                if (!names.ContainsKey(curEntryIndex))
                 {
-                    curEntryIndex = (int)Memory.ReadUInt32(curEntry);
-                    if (!names.ContainsKey(curEntryIndex))
-                    {
-                        curString = Memory.ReadString(curEntry + stringOffset, unicode);
-                        names.Add(curEntryIndex, curString);
-                    }
+                    curString = Memory.ReadString(curEntry + stringOffset, unicode);
+                    names.Add(curEntryIndex, curString);
                 }
-
-                offset += 4;
             }
         }
 
@@ -277,51 +270,49 @@
 
             int offset = 0;
 
-            IntPtr curEntry;
             int curEntryIndex;
             int curNameIndex;
             int linkerLoadValue = 0;
 
+            IntPtr[] objPtrs = Memory.ReadTArrayPtrs(gObjectsArray);
+
             GameObject curObject;
 
-            for (int i = 0; i < gObjectsArray.count; i++)
+            foreach (IntPtr curEntry in objPtrs)
             {
                 ProgressUpdate.progressType = ProgressType.Objects;
                 ProgressUpdate.max = (int)gObjectsArray.count;
-                ProgressUpdate.index = i;
+                //ProgressUpdate.index = i;
 
-                curEntry = (IntPtr)Memory.ReadUInt32(gObjectsArray.contents + offset);
-                if (curEntry != IntPtr.Zero)
+                curEntryIndex = (int)Memory.ReadUInt32(curEntry + indexOffset);
+                if (!objects.ContainsKey(curEntryIndex))
                 {
-                    curEntryIndex = (int)Memory.ReadUInt32(curEntry + indexOffset);
-                    if (!objects.ContainsKey(curEntryIndex))
+                    curNameIndex = (int)Memory.ReadUInt32(curEntry + nameOffset);
+                    if ((curNameIndex > -1) && (curNameIndex < gNamesArray.count))
                     {
-                        curNameIndex = (int)Memory.ReadUInt32(curEntry + nameOffset);
-                        if ((curNameIndex > -1) && (curNameIndex < gNamesArray.count))
-                        {
-                            curObject = new GameObject();
+                        curObject = new GameObject();
 
-                            curObject.outerAddress = (IntPtr)Memory.ReadUInt32(curEntry + outerOffset);
-                            curObject.classAddress = (IntPtr)Memory.ReadUInt32(curEntry + classOffset);
-                            curObject.inheritedAddress = (IntPtr)Memory.ReadUInt32(curEntry + superOffset);
+                        curObject.outerAddress = (IntPtr)Memory.ReadUInt32(curEntry + outerOffset);
+                        curObject.classAddress = (IntPtr)Memory.ReadUInt32(curEntry + classOffset);
+                        curObject.inheritedAddress = (IntPtr)Memory.ReadUInt32(curEntry + superOffset);
 
-                            curObject.propertyData = SetPropertyData(curObject, curEntry);
+                        curObject.propertyData = SetPropertyData(curObject, curEntry);
 
-                            if (names.ContainsKey(curNameIndex))
-                                curObject.name = names[curNameIndex];
-                            else
-                                curObject.name = curNameIndex.ToString();
+                        if (names.ContainsKey(curNameIndex))
+                            curObject.name = names[curNameIndex];
+                        else
+                            curObject.name = curNameIndex.ToString();
 
-                            curObject.type = ObjectType.GameObject;
-                            linkerLoadValue = (int)Memory.ReadUInt32(curEntry + linkerLoadOffset);
-                            if (linkerLoadValue == 0)
-                                curObject.type = ObjectType.Instance;
+                        curObject.type = ObjectType.GameObject;
+                        linkerLoadValue = (int)Memory.ReadUInt32(curEntry + linkerLoadOffset);
+                        if (linkerLoadValue == 0)
+                            curObject.type = ObjectType.Instance;
 
-                            curObject.index = (int)(offset / 4);
-                            objects.Add(curEntry, curObject);
-                        }
+                        curObject.index = (int)(offset / 4);
+                        objects.Add(curEntry, curObject);
                     }
                 }
+                
 
                 offset += 4;
             }

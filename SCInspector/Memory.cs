@@ -246,6 +246,23 @@ namespace SCInspector
             handle.Free();
             return structure;
         }
+
+        public static IntPtr[] ReadTArrayPtrs(TArray array)
+        {
+            List<IntPtr> list = new List<IntPtr>();
+            byte[] buffer = new byte[array.count * 4];
+            ReadProcessMemory(ProcessHandle, array.contents, buffer, buffer.Length, out outputPtr);
+            IntPtr curPtr;
+
+            for (int i = 0; i < array.count; i++)
+            {                
+                curPtr = (IntPtr)BitConverter.ToUInt32(buffer, i * 4);
+                if (curPtr != IntPtr.Zero)
+                    list.Add(curPtr);
+            }
+
+            return list.ToArray();
+        }
     }
 
 }
