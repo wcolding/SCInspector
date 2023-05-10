@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using SCInspector.Unreal;
 
 namespace SCInspector
 {

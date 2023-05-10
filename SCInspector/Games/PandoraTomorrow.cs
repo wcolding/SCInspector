@@ -1,4 +1,6 @@
-﻿namespace SCInspector
+﻿using SCInspector.Unreal;
+
+namespace SCInspector
 {
     public class SC2GameData : GameData
     {
