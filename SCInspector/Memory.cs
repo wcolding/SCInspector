@@ -3,6 +3,7 @@ using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using SCInspector.Unreal;
 
 namespace SCInspector
 {
