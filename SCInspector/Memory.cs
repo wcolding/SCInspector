@@ -1,10 +1,9 @@
+using SCInspector.Unreal;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
-using SCInspector.Unreal;
 
 namespace SCInspector
 {
@@ -145,7 +144,7 @@ namespace SCInspector
         {
             IntPtr hwnd = FindWindowA(null, windowName);
             if (hwnd == IntPtr.Zero) return hwnd;
-            
+
             GetWindowThreadProcessId(hwnd, out pid);
             Process process = Process.GetProcessById(pid);
             if (process == null) return IntPtr.Zero;
@@ -184,7 +183,7 @@ namespace SCInspector
             WriteProcessMemory(ProcessHandle, offset, value, value.Length, out outputPtr);
         }
 
-        public static UInt32 ReadUInt8(IntPtr offset)
+        public static uint ReadUInt8(IntPtr offset)
         {
             return ReadBytes(offset, 1)[0];
         }
@@ -194,7 +193,7 @@ namespace SCInspector
             WriteBytes(offset, new byte[] { value });
         }
 
-        public static UInt16 ReadUInt16(IntPtr offset)
+        public static ushort ReadUInt16(IntPtr offset)
         {
             return BitConverter.ToUInt16(ReadBytes(offset, 2), 0);
         }
@@ -204,7 +203,7 @@ namespace SCInspector
             WriteBytes(offset, BitConverter.GetBytes(value));
         }
 
-        public static UInt32 ReadUInt32(IntPtr offset)
+        public static uint ReadUInt32(IntPtr offset)
         {
             return BitConverter.ToUInt32(ReadBytes(offset, 4), 0);
         }
