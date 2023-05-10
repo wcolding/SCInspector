@@ -1,4 +1,5 @@
 ﻿using SCInspector.Unreal;
+﻿using System.Runtime.InteropServices;
 
 namespace SCInspector
 {
@@ -29,4 +30,38 @@ namespace SCInspector
             base.GetObjects(gObjectsArray);
         }
     }
+
+    [StructLayout(LayoutKind.Explicit)]
+    unsafe class UObject
+    {
+        [FieldOffset(0)]
+        public IntPtr vTable;
+        [FieldOffset(0x04)]
+        public int internalIndex;
+        [FieldOffset(0x18)]
+        public IntPtr outer;
+        [FieldOffset(0x1C)]
+        public int objectFlags;
+        [FieldOffset(0x20)]
+        public int nameIndex;
+        [FieldOffset(0x24)]
+        public IntPtr classPtr;
+        [FieldOffset(0x28)]
+        public IntPtr dName;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    unsafe class UField : UObject
+    {
+        [FieldOffset(0x2C)]
+        public IntPtr superField;
+        [FieldOffset(0x30)]
+        public IntPtr next;
+        [FieldOffset(0x34)]
+        public IntPtr hashNext;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    unsafe class UProperty : UField { }
+
 }
