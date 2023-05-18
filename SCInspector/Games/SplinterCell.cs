@@ -1,7 +1,7 @@
 ﻿using SCInspector.Unreal;
 ﻿using System.Runtime.InteropServices;
 
-namespace SCInspector
+namespace SCInspector.SplinterCell
 {
     public class SC1GameData : GameData
     {

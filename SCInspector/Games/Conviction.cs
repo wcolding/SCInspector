@@ -1,6 +1,6 @@
 ﻿using SCInspector.Unreal;
 
-namespace SCInspector
+namespace SCInspector.Conviction
 {
     public class SC5GameData : GameData
     {

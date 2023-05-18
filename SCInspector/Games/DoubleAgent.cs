@@ -1,6 +1,6 @@
 ﻿using SCInspector.Unreal;
 
-namespace SCInspector
+namespace SCInspector.DoubleAgent
 {
     public class SC4GameData : GameData
     {

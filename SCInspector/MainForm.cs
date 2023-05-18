@@ -56,22 +56,22 @@ namespace SCInspector
             switch (selectedGame.game)
             {
                 case Game.SplinterCell:
-                    gameData = new SC1GameData(selectedGame);
+                    gameData = new SplinterCell.SC1GameData(selectedGame);
                     break;
                 case Game.PandoraTomorrow:
-                    gameData = new SC2GameData(selectedGame);
+                    gameData = new PandoraTomorrow.SC2GameData(selectedGame);
                     break;
                 case Game.ChaosTheory:
-                    gameData = new SC3GameData(selectedGame);
+                    gameData = new ChaosTheory.SC3GameData(selectedGame);
                     break;
                 case Game.DoubleAgent:
-                    gameData = new SC4GameData(selectedGame);
+                    gameData = new DoubleAgent.SC4GameData(selectedGame);
                     break;
-                //case Game.ConvictionSteam:
-                //    gameData = new SC5GameData(selectedGame);
-                //    break;
+                case Game.ConvictionSteam:
+                    gameData = new Conviction.SC5GameData(selectedGame);
+                    break;
                 case Game.ConvictionUbi:
-                    gameData = new SC5GameData(selectedGame);
+                    gameData = new Conviction.SC5GameData(selectedGame);
                     break;
                 default:
                     break;

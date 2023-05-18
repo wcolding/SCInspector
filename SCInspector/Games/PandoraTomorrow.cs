@@ -1,6 +1,6 @@
 ﻿using SCInspector.Unreal;
 
-namespace SCInspector
+namespace SCInspector.PandoraTomorrow
 {
     public class SC2GameData : GameData
     {

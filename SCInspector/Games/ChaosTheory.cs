@@ -1,6 +1,6 @@
 ﻿using SCInspector.Unreal;
 
-namespace SCInspector
+namespace SCInspector.ChaosTheory
 {
     public class SC3GameData : GameData
     {
