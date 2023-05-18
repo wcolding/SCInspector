@@ -38,6 +38,8 @@ namespace SCInspector
         public IntPtr vTable;
         [FieldOffset(0x04)]
         public int internalIndex;
+        [FieldOffset(0x10)]
+        public int linkerLoad;
         [FieldOffset(0x18)]
         public IntPtr outer;
         [FieldOffset(0x1C)]
@@ -54,11 +56,11 @@ namespace SCInspector
     public unsafe class UField : UObject
     {
         [FieldOffset(0x2C)]
-        public IntPtr superField;
+        public int superField;
         [FieldOffset(0x30)]
-        public IntPtr next;
+        public int next;
         [FieldOffset(0x34)]
-        public IntPtr hashNext;
+        public int hashNext;
     }
 
     [StructLayout(LayoutKind.Explicit)]
