@@ -3,9 +3,27 @@
 
 namespace SCInspector.SplinterCell
 {
+    public static class Data
+    {
+        public static Dictionary<string, GameInfo> Targets = new Dictionary<string, GameInfo>()
+        {
+            {
+                "Splinter Cell",
+                new GameInfo()
+                {
+                    game = Game.SplinterCell,
+                    windowName = "Tom Clancy's Splinter Cell",
+                    moduleName = "Core.dll",
+                    gNamesOffset = 0x18DD7C,
+                    gObjectsOffset = 0x19518C
+                }
+            }
+        };
+    }
+
     public class SC1GameData : GameData
     {
-        public SC1GameData(GameEntry _info) : base(_info) { }
+        public SC1GameData(GameInfo _info) : base(_info) { }
 
         protected override void GetNames(TArray gNamesArray)
         {
@@ -56,11 +74,11 @@ namespace SCInspector.SplinterCell
     public unsafe class UField : UObject
     {
         [FieldOffset(0x2C)]
-        public int superField;
+        public IntPtr superField;
         [FieldOffset(0x30)]
-        public int next;
+        public IntPtr next;
         [FieldOffset(0x34)]
-        public int hashNext;
+        public IntPtr hashNext;
     }
 
     [StructLayout(LayoutKind.Explicit)]

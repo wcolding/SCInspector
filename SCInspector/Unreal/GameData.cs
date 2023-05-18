@@ -116,7 +116,7 @@
 
         private TArray gNamesArray;
         private TArray gObjectsArray;
-        private GameEntry info;
+        private GameInfo info;
 
         #region Game-Specified Offsets
         protected int stringOffset;
@@ -133,7 +133,7 @@
         protected int bitmaskOffset;
         #endregion
 
-        public GameData(GameEntry _info)
+        public GameData(GameInfo _info)
         {
             names = new Dictionary<int, string>();
             objects = new Dictionary<IntPtr, GameObject>();

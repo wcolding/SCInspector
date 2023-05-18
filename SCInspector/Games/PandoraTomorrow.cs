@@ -2,9 +2,27 @@
 
 namespace SCInspector.PandoraTomorrow
 {
+    public static class Data
+    {
+        public static Dictionary<string, GameInfo> Targets = new Dictionary<string, GameInfo>()
+        {
+            { 
+                "Pandora Tomorrow",
+                new GameInfo()
+                {
+                    game = Game.PandoraTomorrow,
+                    windowName = "Tom Clancy's Splinter Cell: Pandora Tomorrow",
+                    moduleName = "Core.dll",
+                    gNamesOffset = 0x1A9384,
+                    gObjectsOffset = 0x1AE0EC
+                }
+            }
+        };
+    }
+
     public class SC2GameData : GameData
     {
-        public SC2GameData(GameEntry _info) : base(_info) { }
+        public SC2GameData(GameInfo _info) : base(_info) { }
 
         protected override void GetNames(TArray gNamesArray)
         {

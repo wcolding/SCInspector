@@ -2,9 +2,27 @@
 
 namespace SCInspector.ChaosTheory
 {
+    public static class Data
+    {
+        public static Dictionary<string, GameInfo> Targets = new Dictionary<string, GameInfo>()
+        {
+            {
+                "Chaos Theory",
+                new GameInfo()
+                {
+                    game = Game.ChaosTheory,
+                    windowName = "Tom Clancy's Splinter Cell Chaos Theory",
+                    moduleName = "splintercell3.exe",
+                    gNamesOffset = 0xA0DFC0,
+                    gObjectsOffset = 0xA12084
+                }
+            }
+        };
+    }
+
     public class SC3GameData : GameData
     {
-        public SC3GameData(GameEntry _info) : base(_info) { }
+        public SC3GameData(GameInfo _info) : base(_info) { }
 
         protected override void GetNames(TArray gNamesArray)
         {

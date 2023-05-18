@@ -3,6 +3,7 @@ using SCInspector.Unreal;
 namespace SCInspector
 {
     using GameObjectEntry = KeyValuePair<IntPtr, GameObject>;
+    using Target = KeyValuePair<string, GameInfo>;
     using static InputUtils;
 
     public partial class MainForm : Form
@@ -16,6 +17,7 @@ namespace SCInspector
         public GameData gameData;
         private List<ListViewItem> listViewCache = new List<ListViewItem>();
         private Action debouncedFilterListView;
+        private Dictionary<string, GameInfo> targets;
 
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -30,17 +32,16 @@ namespace SCInspector
 
             gamesDropdown.Items.Clear();
 
-            foreach (GameEntry entry in Games.GameInfo)
-            {
-                gamesDropdown.Items.Add(entry.displayName);
-            }
+            targets = Games.GetTargets();
+            foreach (Target t in targets)
+                gamesDropdown.Items.Add(t.Key);
 
             gamesDropdown.SelectedIndex = 0;
         }
 
         private void hookGameButton_Click(object sender, EventArgs e)
         {
-            GameEntry selectedGame = Games.GameInfo[gamesDropdown.SelectedIndex];
+            GameInfo selectedGame = targets[gamesDropdown.Text];
             Memory.OpenGame(selectedGame.windowName, selectedGame.moduleName);
             if (Memory.ModuleBase == IntPtr.Zero)
             {

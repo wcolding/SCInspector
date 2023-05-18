@@ -2,9 +2,26 @@
 
 namespace SCInspector.DoubleAgent
 {
+    public static class Data
+    {
+        public static Dictionary<string, GameInfo> Targets = new Dictionary<string, GameInfo>()
+        {
+            {
+                "Double Agent",
+                new GameInfo()
+                {
+                    game = Game.DoubleAgent,
+                    windowName = "Tom Clancy's SplinterCell 4",
+                    moduleName = "Core.dll",
+                    gNamesOffset = 0x2D3A24,
+                    gObjectsOffset = 0X2D7AC4
+                }
+            }
+        };
+    }
     public class SC4GameData : GameData
     {
-        public SC4GameData(GameEntry _info) : base(_info) { }
+        public SC4GameData(GameInfo _info) : base(_info) { }
 
         protected override void GetNames(TArray gNamesArray)
         {
