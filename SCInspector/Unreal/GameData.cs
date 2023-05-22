@@ -15,7 +15,7 @@
 
         protected bool unicode = false;
 
-        protected virtual void GetNames(TArray gNamesArray)
+        protected void GetNames(TArray gNamesArray)
         {
             names.Clear();
             int curEntryIndex;
@@ -34,13 +34,13 @@
                 curEntryIndex = (int)Memory.ReadUInt32(curEntry);
                 if (!names.ContainsKey(curEntryIndex))
                 {
-                    curString = Memory.ReadString(curEntry + stringOffset, unicode);
+                    curString = Memory.ReadString(curEntry + Offsets.String, unicode);
                     names.Add(curEntryIndex, curString);
                 }
             }
         }
 
-        protected virtual void GetObjects(TArray gObjectsArray)
+        protected void GetObjects(TArray gObjectsArray)
         {
             if (names.Count() == 0)
                 return;
@@ -63,17 +63,17 @@
                 ProgressUpdate.max = (int)gObjectsArray.count;
                 //ProgressUpdate.index = i;
 
-                curEntryIndex = (int)Memory.ReadUInt32(curEntry + indexOffset);
+                curEntryIndex = (int)Memory.ReadUInt32(curEntry + Offsets.InternalIndex);
                 if (!objects.ContainsKey(curEntryIndex))
                 {
-                    curNameIndex = (int)Memory.ReadUInt32(curEntry + nameOffset);
+                    curNameIndex = (int)Memory.ReadUInt32(curEntry + Offsets.FName);
                     if (curNameIndex > -1 && curNameIndex < gNamesArray.count)
                     {
                         curObject = new GameObject();
 
-                        curObject.outerAddress = (IntPtr)Memory.ReadUInt32(curEntry + outerOffset);
-                        curObject.classAddress = (IntPtr)Memory.ReadUInt32(curEntry + classOffset);
-                        curObject.inheritedAddress = (IntPtr)Memory.ReadUInt32(curEntry + superOffset);
+                        curObject.outerAddress = (IntPtr)Memory.ReadUInt32(curEntry + Offsets.Outer);
+                        curObject.classAddress = (IntPtr)Memory.ReadUInt32(curEntry + Offsets.Class);
+                        curObject.inheritedAddress = (IntPtr)Memory.ReadUInt32(curEntry + Offsets.SuperField);
 
                         curObject.propertyData = SetPropertyData(curObject, curEntry);
 
@@ -83,7 +83,7 @@
                             curObject.name = curNameIndex.ToString();
 
                         curObject.type = ObjectType.GameObject;
-                        linkerLoadValue = (int)Memory.ReadUInt32(curEntry + linkerLoadOffset);
+                        linkerLoadValue = (int)Memory.ReadUInt32(curEntry + Offsets.LinkerLoad);
                         if (linkerLoadValue == 0)
                             curObject.type = ObjectType.Instance;
 
@@ -114,26 +114,13 @@
             objects = newObjects;
         }
 
+        protected GameOffsets Offsets;
+
         private TArray gNamesArray;
         private TArray gObjectsArray;
-        private GameEntry info;
+        private GameInfo info;
 
-        #region Game-Specified Offsets
-        protected int stringOffset;
-        protected int indexOffset;
-        protected int linkerLoadOffset;  // Distinguishes classes from their instances; null if instance
-        protected int outerOffset;       // Parent object
-        protected int nameOffset;
-        protected int classOffset;
-        protected int superOffset;       // Class this inherits from
-        protected int propertyOffset;
-        protected int structTypeOffset = -1;
-        protected int structPropertySizeOffset = -1;
-        protected int structNextPropertyOffset;
-        protected int bitmaskOffset;
-        #endregion
-
-        public GameData(GameEntry _info)
+        public GameData(GameInfo _info)
         {
             names = new Dictionary<int, string>();
             objects = new Dictionary<IntPtr, GameObject>();
@@ -141,7 +128,7 @@
             RefreshObjects();
         }
 
-        public void RefreshObjects()
+        public virtual void RefreshObjects()
         {
             if (Memory.ProcessHandle != IntPtr.Zero && Memory.ModuleBase != IntPtr.Zero)
             {
@@ -195,12 +182,12 @@
 
         private bool isPropertyInStruct(GameObject propertyGameObject)
         {
-            if (propertyGameObject.propertyData.type == PropertyType.None)
+            if (propertyGameObject.propertyData.Type == PropertyType.None)
                 return false;
 
             if (objects.ContainsKey(propertyGameObject.outerAddress))
             {
-                if (objects[propertyGameObject.outerAddress].propertyData.type == PropertyType.Struct)
+                if (objects[propertyGameObject.outerAddress].propertyData.Type == PropertyType.Struct)
                     return true;
             }
 
@@ -217,80 +204,70 @@
                     case "ArrayProperty":
                         {
                             ArrayPropertyData pd = new ArrayPropertyData();
-                            pd.type = PropertyType.Array;
-                            pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                            pd.Type = PropertyType.Array;
+                            pd.SetData(curEntryPtr, Offsets);
                             return pd;
                         }
                     case "BoolProperty":
                         {
                             BoolPropertyData pd = new BoolPropertyData();
-                            pd.type = PropertyType.Bool;
-                            pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
-                            pd.bitmask = Memory.ReadUInt32(curEntryPtr + bitmaskOffset);
+                            pd.Type = PropertyType.Bool;
+                            pd.SetData(curEntryPtr, Offsets);
                             return pd;
                         }
                     case "ByteProperty":
                         {
                             BytePropertyData pd = new BytePropertyData();
-                            pd.type = PropertyType.Byte;
-                            pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                            pd.Type = PropertyType.Byte;
+                            pd.SetData(curEntryPtr, Offsets);
                             return pd;
                         }
                     case "IntProperty":
                         {
                             IntPropertyData pd = new IntPropertyData();
-                            pd.type = PropertyType.Int;
-                            pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                            pd.Type = PropertyType.Int;
+                            pd.SetData(curEntryPtr, Offsets);
                             return pd;
                         }
                     case "FloatProperty":
                         {
                             FloatPropertyData pd = new FloatPropertyData();
-                            pd.type = PropertyType.Float;
-                            pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                            pd.Type = PropertyType.Float;
+                            pd.SetData(curEntryPtr, Offsets);
                             return pd;
                         }
                     case "ObjectProperty":
                         {
                             ObjectPropertyData pd = new ObjectPropertyData();
-                            pd.type = PropertyType.Object;
-                            pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                            pd.Type = PropertyType.Object;
+                            pd.SetData(curEntryPtr, Offsets);
                             return pd;
                         }
                     case "StrProperty":
                         {
                             StrPropertyData pd = new StrPropertyData();
-                            pd.type = PropertyType.String;
-                            pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                            pd.Type = PropertyType.String;
+                            pd.SetData(curEntryPtr, Offsets);
                             return pd;
                         }
                     case "NameProperty":
                         {
                             NamePropertyData pd = new NamePropertyData();
-                            pd.type = PropertyType.Name;
-                            pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
+                            pd.Type = PropertyType.Name;
+                            pd.SetData(curEntryPtr, Offsets);
                             return pd;
                         }
                     case "StructProperty":
                         {
                             StructPropertyData pd = new StructPropertyData();
-                            pd.type = PropertyType.Struct;
-                            pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
-                            if (structPropertySizeOffset != -1)
-                                pd.size = (short)Memory.ReadUInt16(curEntryPtr + structPropertySizeOffset);
-
-                            if (structTypeOffset != -1)
-                                pd.structClassPtr = (IntPtr)Memory.ReadUInt32(curEntryPtr + structTypeOffset);
+                            pd.Type = PropertyType.Struct;
+                            pd.SetData(curEntryPtr, Offsets);
 
                             return pd;
                         }
                     default:
-                        {
-                            PropertyData pd = new PropertyData();
-                            pd.type = PropertyType.None;
-                            pd.offset = (int)Memory.ReadUInt32(curEntryPtr + propertyOffset);
-                            return pd;
-                        }
+                        return new PropertyData();
+                        
                 }
             }
 
@@ -364,7 +341,7 @@
         {
             List<GameObjectEntry> properties = new List<GameObjectEntry>();
 
-            if (gameObject.propertyData.type != PropertyType.Struct)
+            if (gameObject.propertyData.Type != PropertyType.Struct)
                 return properties.ToArray();
 
             StructPropertyData asStruct = (StructPropertyData)gameObject.propertyData;
@@ -430,7 +407,7 @@
             newObj.inheritedAddress = gameObject.inheritedAddress;
             newObj.type = gameObject.type;
 
-            switch (gameObject.propertyData.type)
+            switch (gameObject.propertyData.Type)
             {
                 case PropertyType.Array:
                     {
@@ -438,7 +415,7 @@
                         ArrayPropertyData original = (ArrayPropertyData)gameObject.propertyData;
                         newObj.propertyData.offset = original.offset;
                         newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.type = original.type;
+                        newObj.propertyData.Type = original.Type;
                         break;
                     }
                 case PropertyType.Int:
@@ -447,7 +424,7 @@
                         IntPropertyData original = (IntPropertyData)gameObject.propertyData;
                         newObj.propertyData.offset = original.offset;
                         newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.type = original.type;
+                        newObj.propertyData.Type = original.Type;
                         break;
                     }
                 case PropertyType.Bool:
@@ -456,7 +433,7 @@
                         BoolPropertyData original = (BoolPropertyData)gameObject.propertyData;
                         newObj.propertyData.offset = original.offset;
                         newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.type = original.type;
+                        newObj.propertyData.Type = original.Type;
                         break;
                     }
                 case PropertyType.Byte:
@@ -465,7 +442,7 @@
                         BytePropertyData original = (BytePropertyData)gameObject.propertyData;
                         newObj.propertyData.offset = original.offset;
                         newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.type = original.type;
+                        newObj.propertyData.Type = original.Type;
                         break;
                     }
                 case PropertyType.Float:
@@ -474,7 +451,7 @@
                         FloatPropertyData original = (FloatPropertyData)gameObject.propertyData;
                         newObj.propertyData.offset = original.offset;
                         newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.type = original.type;
+                        newObj.propertyData.Type = original.Type;
                         break;
                     }
                 case PropertyType.Name:
@@ -483,7 +460,7 @@
                         NamePropertyData original = (NamePropertyData)gameObject.propertyData;
                         newObj.propertyData.offset = original.offset;
                         newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.type = original.type;
+                        newObj.propertyData.Type = original.Type;
                         break;
                     }
                 case PropertyType.Object:
@@ -492,7 +469,7 @@
                         ObjectPropertyData original = (ObjectPropertyData)gameObject.propertyData;
                         newObj.propertyData.offset = original.offset;
                         newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.type = original.type;
+                        newObj.propertyData.Type = original.Type;
                         break;
                     }
                 case PropertyType.String:
@@ -501,7 +478,7 @@
                         StrPropertyData original = (StrPropertyData)gameObject.propertyData;
                         newObj.propertyData.offset = original.offset;
                         newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.type = original.type;
+                        newObj.propertyData.Type = original.Type;
                         break;
                     }
                 case PropertyType.Struct:
@@ -511,7 +488,7 @@
                         StructPropertyData original = (StructPropertyData)gameObject.propertyData;
                         newPD.offset = original.offset;
                         newPD.calculated = IntPtr.Zero;
-                        newPD.type = original.type;
+                        newPD.Type = original.Type;
                         newPD.structClassPtr = original.structClassPtr;
                         newPD.size = original.size;
                         newObj.propertyData = newPD;

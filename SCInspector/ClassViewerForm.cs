@@ -54,7 +54,7 @@ namespace SCInspector
             GameObjectEntry[] children = gameData.GetClassProperties(gameObject);
             foreach (GameObjectEntry child in children)
             {
-                if (child.Value.propertyData.type != PropertyType.None)
+                if (child.Value.propertyData.Type != PropertyType.None)
                         properties.Add(child);
             }
 
@@ -87,7 +87,7 @@ namespace SCInspector
                     fullPropertiesListView.Items.Remove(selected);
                     propertiesListViewCache.Remove(selected);
                     selectedProperties.Add(property);
-                    if (property.Value.propertyData.type == PropertyType.Struct)
+                    if (property.Value.propertyData.Type == PropertyType.Struct)
                         selectedProperties.AddRange(gameData.GetStructProperties(property.Value));
                     RecalculateInstanceProperties();
                 }
@@ -103,7 +103,7 @@ namespace SCInspector
             {
                 if (property.Value.fullPath == selPropertiesListView.SelectedItems[0].Text)
                 {
-                    PropertyType selectedType = property.Value.propertyData.type;
+                    PropertyType selectedType = property.Value.propertyData.Type;
                     switch (selectedType)
                     {
                         case PropertyType.Bool:
@@ -187,7 +187,7 @@ namespace SCInspector
 
                 for (int i = 0; i < selectedProperties.Count; i++)
                 {
-                    switch (selectedProperties[i].Value.propertyData.type)
+                    switch (selectedProperties[i].Value.propertyData.Type)
                     {
                         case PropertyType.Array:
                             ArrayPropertyData asArray = (ArrayPropertyData)selectedProperties[i].Value.propertyData;

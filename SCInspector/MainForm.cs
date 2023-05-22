@@ -3,6 +3,7 @@ using SCInspector.Unreal;
 namespace SCInspector
 {
     using GameObjectEntry = KeyValuePair<IntPtr, GameObject>;
+    using Target = KeyValuePair<string, GameInfo>;
     using static InputUtils;
 
     public partial class MainForm : Form
@@ -16,6 +17,7 @@ namespace SCInspector
         public GameData gameData;
         private List<ListViewItem> listViewCache = new List<ListViewItem>();
         private Action debouncedFilterListView;
+        private Dictionary<string, GameInfo> targets;
 
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -30,17 +32,16 @@ namespace SCInspector
 
             gamesDropdown.Items.Clear();
 
-            foreach (GameEntry entry in Games.GameInfo)
-            {
-                gamesDropdown.Items.Add(entry.displayName);
-            }
+            targets = Games.GetTargets();
+            foreach (Target t in targets)
+                gamesDropdown.Items.Add(t.Key);
 
             gamesDropdown.SelectedIndex = 0;
         }
 
         private void hookGameButton_Click(object sender, EventArgs e)
         {
-            GameEntry selectedGame = Games.GameInfo[gamesDropdown.SelectedIndex];
+            GameInfo selectedGame = targets[gamesDropdown.Text];
             Memory.OpenGame(selectedGame.windowName, selectedGame.moduleName);
             if (Memory.ModuleBase == IntPtr.Zero)
             {
@@ -56,22 +57,22 @@ namespace SCInspector
             switch (selectedGame.game)
             {
                 case Game.SplinterCell:
-                    gameData = new SC1GameData(selectedGame);
+                    gameData = new SplinterCell.SC1GameData(selectedGame);
                     break;
                 case Game.PandoraTomorrow:
-                    gameData = new SC2GameData(selectedGame);
+                    gameData = new PandoraTomorrow.SC2GameData(selectedGame);
                     break;
                 case Game.ChaosTheory:
-                    gameData = new SC3GameData(selectedGame);
+                    gameData = new ChaosTheory.SC3GameData(selectedGame);
                     break;
                 case Game.DoubleAgent:
-                    gameData = new SC4GameData(selectedGame);
+                    gameData = new DoubleAgent.SC4GameData(selectedGame);
                     break;
-                //case Game.ConvictionSteam:
-                //    gameData = new SC5GameData(selectedGame);
-                //    break;
+                case Game.ConvictionSteam:
+                    gameData = new Conviction.SC5GameData(selectedGame);
+                    break;
                 case Game.ConvictionUbi:
-                    gameData = new SC5GameData(selectedGame);
+                    gameData = new Conviction.SC5GameData(selectedGame);
                     break;
                 default:
                     break;
