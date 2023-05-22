@@ -43,7 +43,7 @@ namespace SCInspector.Conviction
             PropertyOffset = 0x3E,
             DName = 0xE8,
             Bitmask = 0x9C,
-            Struct = 0x54
+            Struct = 0x9C
         };
     }
 
