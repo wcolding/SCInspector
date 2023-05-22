@@ -15,6 +15,8 @@
 
         protected bool unicode = false;
 
+        public bool LEADEngine { get; protected set; } = false;
+
         protected void GetNames(TArray gNamesArray)
         {
             names.Clear();
@@ -63,7 +65,7 @@
                 if (!objects.ContainsKey(curEntry))
                 {
                     curNameIndex = (int)Memory.ReadUInt32(curEntry + Offsets.FName);
-                    if (curNameIndex > -1 && curNameIndex < gNamesArray.count)
+                    if (curNameIndex > -1)
                     {
                         curObject = new GameObject();
 
@@ -75,6 +77,15 @@
 
                         if (names.ContainsKey(curNameIndex))
                             curObject.name = names[curNameIndex];
+                        else if (LEADEngine)
+                        {
+                            int classNameIndex = curNameIndex & 0x7FFFF;
+                            int instanceNum = ((curNameIndex - classNameIndex) >> 0x13) - 1;
+                            if (names.ContainsKey(classNameIndex))
+                                curObject.name = String.Format("{0}_{1}", names[classNameIndex], instanceNum.ToString());
+                            else
+                                curObject.name = curNameIndex.ToString();
+                        }
                         else
                             curObject.name = curNameIndex.ToString();
 
@@ -83,7 +94,7 @@
                         if (linkerLoadValue == 0)
                             curObject.type = ObjectType.Instance;
 
-                        curObject.index = offset / 4;
+                        curObject.index = curEntryIndex;
                         objects.Add(curEntry, curObject);
                     }
                 }
@@ -200,55 +211,55 @@
                     case "ArrayProperty":
                     {
                         ArrayPropertyData pd = new ArrayPropertyData();
-                        pd.SetData(curEntryPtr, Offsets);
+                        pd.SetData(curEntryPtr, Offsets, LEADEngine);
                         return pd;
                     }
                     case "BoolProperty":
                     {
                         BoolPropertyData pd = new BoolPropertyData();
-                        pd.SetData(curEntryPtr, Offsets);
+                        pd.SetData(curEntryPtr, Offsets, LEADEngine);
                         return pd;
                     }
                     case "ByteProperty":
                     {
                         BytePropertyData pd = new BytePropertyData();
-                        pd.SetData(curEntryPtr, Offsets);
+                        pd.SetData(curEntryPtr, Offsets, LEADEngine);
                         return pd;
                     }
                     case "IntProperty":
                     {
                         IntPropertyData pd = new IntPropertyData();
-                        pd.SetData(curEntryPtr, Offsets);
+                        pd.SetData(curEntryPtr, Offsets, LEADEngine);
                         return pd;
                     }
                     case "FloatProperty":
                     {
                         FloatPropertyData pd = new FloatPropertyData();
-                        pd.SetData(curEntryPtr, Offsets);
+                        pd.SetData(curEntryPtr, Offsets, LEADEngine);
                         return pd;
                     }
                     case "ObjectProperty":
                     {
                         ObjectPropertyData pd = new ObjectPropertyData();
-                        pd.SetData(curEntryPtr, Offsets);
+                        pd.SetData(curEntryPtr, Offsets, LEADEngine);
                         return pd;
                     }
                     case "StrProperty":
                     {
                         StrPropertyData pd = new StrPropertyData();
-                        pd.SetData(curEntryPtr, Offsets);
+                        pd.SetData(curEntryPtr, Offsets, LEADEngine);
                         return pd;
                     }
                     case "NameProperty":
                     {
                         NamePropertyData pd = new NamePropertyData();
-                        pd.SetData(curEntryPtr, Offsets);
+                        pd.SetData(curEntryPtr, Offsets, LEADEngine);
                         return pd;
                     }
                     case "StructProperty":
                     {
                         StructPropertyData pd = new StructPropertyData();
-                        pd.SetData(curEntryPtr, Offsets);
+                        pd.SetData(curEntryPtr, Offsets, LEADEngine);
 
                         return pd;
                     }

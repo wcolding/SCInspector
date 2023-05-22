@@ -6,28 +6,28 @@ namespace SCInspector.Conviction
     {
         public static Dictionary<string, GameInfo> Targets = new Dictionary<string, GameInfo>()
         {
-            //{
-            //    "Conviction (Steam)",
-            //    new GameInfo()
-            //    {
-            //        game = Game.ConvictionSteam,
-            //        windowName = "Conviction",
-            //        moduleName = "conviction_game.exe",
-            //        gNamesOffset = 0x101907C,
-            //        gObjectsOffset = 0x1008FC8
-            //    }
-            //},
-            //{
-            //    "Conviction (Ubisoft)",
-            //    new GameInfo()
-            //    {
-            //        game = Game.ConvictionUbi,
-            //        windowName = "Conviction",
-            //        moduleName = "Conviction_game.exe", // capital C for ubi
-            //        gNamesOffset = (IntPtr)0x101913C,
-            //        gObjectsOffset = (IntPtr)0x1009088
-            //    }
-            //}
+            {
+                "Conviction (Steam)",
+                new GameInfo()
+                {
+                    game = Game.ConvictionSteam,
+                    windowName = "Conviction",
+                    moduleName = "conviction_game.exe",
+                    gNamesOffset = 0x101907C,
+                    gObjectsOffset = 0x1008FC8
+                }
+            },
+            {
+                "Conviction (Ubisoft)",
+                new GameInfo()
+                {
+                    game = Game.ConvictionUbi,
+                    windowName = "Conviction",
+                    moduleName = "Conviction_game.exe", // capital C for ubi
+                    gNamesOffset = 0x101913C,
+                    gObjectsOffset = 0x1009088
+                }
+            }
         };
 
         public static readonly GameOffsets Offsets = new GameOffsets()
@@ -54,6 +54,7 @@ namespace SCInspector.Conviction
         public override void RefreshObjects()
         {
             Offsets = Data.Offsets;
+            LEADEngine = true;
             base.RefreshObjects();
         }
     }

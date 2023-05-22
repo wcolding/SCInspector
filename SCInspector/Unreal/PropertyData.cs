@@ -8,9 +8,12 @@ namespace SCInspector.Unreal
         public IntPtr calculated = IntPtr.Zero;
         public PropertyType Type;
 
-        public virtual void SetData(IntPtr entry, GameOffsets offsets)
+        public virtual void SetData(IntPtr entry, GameOffsets offsets, bool LEADEngine = false)
         {
-            offset = (int)Memory.ReadUInt32(entry + offsets.PropertyOffset);
+            if (LEADEngine) 
+                offset = (int)Memory.ReadUInt16(entry + offsets.PropertyOffset);
+            else
+                offset = (int)Memory.ReadUInt32(entry + offsets.PropertyOffset);
         }
 
         public virtual PropertyData GetCopy() 
@@ -43,10 +46,10 @@ namespace SCInspector.Unreal
             }
         }
 
-        public override void SetData(IntPtr entry, GameOffsets offsets)
+        public override void SetData(IntPtr entry, GameOffsets offsets, bool LEADEngine)
         {
             Type = PropertyType.Byte;
-            base.SetData(entry, offsets);
+            base.SetData(entry, offsets, LEADEngine);
         }
 
         public override PropertyData GetCopy()
@@ -89,11 +92,11 @@ namespace SCInspector.Unreal
             }
         }
 
-        public override void SetData(IntPtr entry, GameOffsets offsets)
+        public override void SetData(IntPtr entry, GameOffsets offsets, bool LEADEngine)
         {
             Type = PropertyType.Bool;
             bitmask  = Memory.ReadUInt32(entry + offsets.Bitmask);
-            base.SetData(entry, offsets);
+            base.SetData(entry, offsets, LEADEngine);
         }
 
         public override PropertyData GetCopy()
@@ -126,10 +129,10 @@ namespace SCInspector.Unreal
             }
         }
 
-        public override void SetData(IntPtr entry, GameOffsets offsets)
+        public override void SetData(IntPtr entry, GameOffsets offsets, bool LEADEngine)
         {
             Type = PropertyType.Int;
-            base.SetData(entry, offsets);
+            base.SetData(entry, offsets, LEADEngine);
         }
 
         public override PropertyData GetCopy()
@@ -162,10 +165,10 @@ namespace SCInspector.Unreal
             }
         }
 
-        public override void SetData(IntPtr entry, GameOffsets offsets)
+        public override void SetData(IntPtr entry, GameOffsets offsets, bool LEADEngine)
         {
             Type = PropertyType.Name;
-            base.SetData(entry, offsets);
+            base.SetData(entry, offsets, LEADEngine);
         }
 
         public override PropertyData GetCopy()
@@ -203,10 +206,10 @@ namespace SCInspector.Unreal
             }
         }
 
-        public override void SetData(IntPtr entry, GameOffsets offsets)
+        public override void SetData(IntPtr entry, GameOffsets offsets, bool LEADEngine)
         {
             Type = PropertyType.String;
-            base.SetData(entry, offsets);
+            base.SetData(entry, offsets, LEADEngine);
         }
 
         public override PropertyData GetCopy()
@@ -239,10 +242,10 @@ namespace SCInspector.Unreal
             }
         }
 
-        public override void SetData(IntPtr entry, GameOffsets offsets)
+        public override void SetData(IntPtr entry, GameOffsets offsets, bool LEADEngine)
         {
             Type = PropertyType.Float;
-            base.SetData(entry, offsets);
+            base.SetData(entry, offsets, LEADEngine);
         }
 
 
@@ -276,10 +279,10 @@ namespace SCInspector.Unreal
             }
         }
 
-        public override void SetData(IntPtr entry, GameOffsets offsets)
+        public override void SetData(IntPtr entry, GameOffsets offsets, bool LEADEngine)
         {
             Type = PropertyType.Object;
-            base.SetData(entry, offsets);
+            base.SetData(entry, offsets, LEADEngine);
         }
 
         public override PropertyData GetCopy()
@@ -296,12 +299,12 @@ namespace SCInspector.Unreal
         public IntPtr structClassPtr;
         public short size = -1;
 
-        public override void SetData(IntPtr entry, GameOffsets offsets)
+        public override void SetData(IntPtr entry, GameOffsets offsets, bool LEADEngine)
         {
             Type = PropertyType.Struct;
             size = (short)Memory.ReadUInt16(entry + offsets.Size); 
             structClassPtr = (IntPtr)Memory.ReadUInt32(entry + offsets.Struct);
-            base.SetData(entry, offsets);
+            base.SetData(entry, offsets, LEADEngine);
         }
 
         public override PropertyData GetCopy()
@@ -328,10 +331,10 @@ namespace SCInspector.Unreal
             }
         }
 
-        public override void SetData(IntPtr entry, GameOffsets offsets)
+        public override void SetData(IntPtr entry, GameOffsets offsets, bool LEADEngine)
         {
             Type = PropertyType.Array;
-            base.SetData(entry, offsets);
+            base.SetData(entry, offsets, LEADEngine);
         }
 
         public override PropertyData GetCopy()
