@@ -18,24 +18,20 @@
         protected void GetNames(TArray gNamesArray)
         {
             names.Clear();
-            int curEntryIndex;
 
-            byte[] stringBuffer = new byte[256];
             string curString;
+            Dictionary<int, IntPtr> nameEntries = Memory.ReadTArray(gNamesArray);
 
-            IntPtr[] namePtrs = Memory.ReadTArrayPtrs(gNamesArray);
-
-            foreach (IntPtr curEntry in namePtrs)
+            foreach (KeyValuePair<int, IntPtr> curEntry in nameEntries)
             {
                 ProgressUpdate.progressType = ProgressType.Names;
                 ProgressUpdate.max = (int)gNamesArray.count;
                 //ProgressUpdate.index = i;
 
-                curEntryIndex = (int)Memory.ReadUInt32(curEntry);
-                if (!names.ContainsKey(curEntryIndex))
+                if (!names.ContainsKey(curEntry.Key))
                 {
-                    curString = Memory.ReadString(curEntry + Offsets.String, unicode);
-                    names.Add(curEntryIndex, curString);
+                    curString = Memory.ReadString(curEntry.Value + Offsets.String, unicode);
+                    names.Add(curEntry.Key, curString);
                 }
             }
         }

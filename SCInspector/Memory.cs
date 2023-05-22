@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -250,19 +251,24 @@ namespace SCInspector
 
         public static IntPtr[] ReadTArrayPtrs(TArray array)
         {
-            List<IntPtr> list = new List<IntPtr>();
+            return ReadTArray(array).Values.ToArray();
+        }
+
+        public static Dictionary<int, IntPtr> ReadTArray(TArray array)
+        {
+            Dictionary<int, IntPtr> dict = new Dictionary<int, IntPtr>();
             byte[] buffer = new byte[array.count * 4];
             ReadProcessMemory(ProcessHandle, array.contents, buffer, buffer.Length, out outputPtr);
             IntPtr curPtr;
 
             for (int i = 0; i < array.count; i++)
-            {                
+            {
                 curPtr = (IntPtr)BitConverter.ToUInt32(buffer, i * 4);
                 if (curPtr != IntPtr.Zero)
-                    list.Add(curPtr);
+                    dict.Add(i, curPtr);
             }
 
-            return list.ToArray();
+            return dict;
         }
     }
 
