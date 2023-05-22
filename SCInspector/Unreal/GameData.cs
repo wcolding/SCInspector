@@ -202,69 +202,60 @@
                 switch (className)
                 {
                     case "ArrayProperty":
-                        {
-                            ArrayPropertyData pd = new ArrayPropertyData();
-                            pd.Type = PropertyType.Array;
-                            pd.SetData(curEntryPtr, Offsets);
-                            return pd;
-                        }
+                    {
+                        ArrayPropertyData pd = new ArrayPropertyData();
+                        pd.SetData(curEntryPtr, Offsets);
+                        return pd;
+                    }
                     case "BoolProperty":
-                        {
-                            BoolPropertyData pd = new BoolPropertyData();
-                            pd.Type = PropertyType.Bool;
-                            pd.SetData(curEntryPtr, Offsets);
-                            return pd;
-                        }
+                    {
+                        BoolPropertyData pd = new BoolPropertyData();
+                        pd.SetData(curEntryPtr, Offsets);
+                        return pd;
+                    }
                     case "ByteProperty":
-                        {
-                            BytePropertyData pd = new BytePropertyData();
-                            pd.Type = PropertyType.Byte;
-                            pd.SetData(curEntryPtr, Offsets);
-                            return pd;
-                        }
+                    {
+                        BytePropertyData pd = new BytePropertyData();
+                        pd.SetData(curEntryPtr, Offsets);
+                        return pd;
+                    }
                     case "IntProperty":
-                        {
-                            IntPropertyData pd = new IntPropertyData();
-                            pd.Type = PropertyType.Int;
-                            pd.SetData(curEntryPtr, Offsets);
-                            return pd;
-                        }
+                    {
+                        IntPropertyData pd = new IntPropertyData();
+                        pd.SetData(curEntryPtr, Offsets);
+                        return pd;
+                    }
                     case "FloatProperty":
-                        {
-                            FloatPropertyData pd = new FloatPropertyData();
-                            pd.Type = PropertyType.Float;
-                            pd.SetData(curEntryPtr, Offsets);
-                            return pd;
-                        }
+                    {
+                        FloatPropertyData pd = new FloatPropertyData();
+                        pd.SetData(curEntryPtr, Offsets);
+                        return pd;
+                    }
                     case "ObjectProperty":
-                        {
-                            ObjectPropertyData pd = new ObjectPropertyData();
-                            pd.Type = PropertyType.Object;
-                            pd.SetData(curEntryPtr, Offsets);
-                            return pd;
-                        }
+                    {
+                        ObjectPropertyData pd = new ObjectPropertyData();
+                        pd.SetData(curEntryPtr, Offsets);
+                        return pd;
+                    }
                     case "StrProperty":
-                        {
-                            StrPropertyData pd = new StrPropertyData();
-                            pd.Type = PropertyType.String;
-                            pd.SetData(curEntryPtr, Offsets);
-                            return pd;
-                        }
+                    {
+                        StrPropertyData pd = new StrPropertyData();
+                        pd.SetData(curEntryPtr, Offsets);
+                        return pd;
+                    }
                     case "NameProperty":
-                        {
-                            NamePropertyData pd = new NamePropertyData();
-                            pd.Type = PropertyType.Name;
-                            pd.SetData(curEntryPtr, Offsets);
-                            return pd;
-                        }
+                    {
+                        NamePropertyData pd = new NamePropertyData();
+                        pd.SetData(curEntryPtr, Offsets);
+                        return pd;
+                    }
                     case "StructProperty":
-                        {
-                            StructPropertyData pd = new StructPropertyData();
-                            pd.Type = PropertyType.Struct;
-                            pd.SetData(curEntryPtr, Offsets);
+                    {
+                        StructPropertyData pd = new StructPropertyData();
+                        pd.SetData(curEntryPtr, Offsets);
 
-                            return pd;
-                        }
+                        return pd;
+                    }
                     default:
                         return new PropertyData();
                         
@@ -406,98 +397,7 @@
             newObj.outerAddress = gameObject.outerAddress;
             newObj.inheritedAddress = gameObject.inheritedAddress;
             newObj.type = gameObject.type;
-
-            switch (gameObject.propertyData.Type)
-            {
-                case PropertyType.Array:
-                    {
-                        newObj.propertyData = new ArrayPropertyData();
-                        ArrayPropertyData original = (ArrayPropertyData)gameObject.propertyData;
-                        newObj.propertyData.offset = original.offset;
-                        newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.Type = original.Type;
-                        break;
-                    }
-                case PropertyType.Int:
-                    {
-                        newObj.propertyData = new IntPropertyData();
-                        IntPropertyData original = (IntPropertyData)gameObject.propertyData;
-                        newObj.propertyData.offset = original.offset;
-                        newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.Type = original.Type;
-                        break;
-                    }
-                case PropertyType.Bool:
-                    {
-                        newObj.propertyData = new BoolPropertyData();
-                        BoolPropertyData original = (BoolPropertyData)gameObject.propertyData;
-                        newObj.propertyData.offset = original.offset;
-                        newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.Type = original.Type;
-                        break;
-                    }
-                case PropertyType.Byte:
-                    {
-                        newObj.propertyData = new BytePropertyData();
-                        BytePropertyData original = (BytePropertyData)gameObject.propertyData;
-                        newObj.propertyData.offset = original.offset;
-                        newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.Type = original.Type;
-                        break;
-                    }
-                case PropertyType.Float:
-                    {
-                        newObj.propertyData = new FloatPropertyData();
-                        FloatPropertyData original = (FloatPropertyData)gameObject.propertyData;
-                        newObj.propertyData.offset = original.offset;
-                        newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.Type = original.Type;
-                        break;
-                    }
-                case PropertyType.Name:
-                    {
-                        newObj.propertyData = new NamePropertyData();
-                        NamePropertyData original = (NamePropertyData)gameObject.propertyData;
-                        newObj.propertyData.offset = original.offset;
-                        newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.Type = original.Type;
-                        break;
-                    }
-                case PropertyType.Object:
-                    {
-                        newObj.propertyData = new ObjectPropertyData();
-                        ObjectPropertyData original = (ObjectPropertyData)gameObject.propertyData;
-                        newObj.propertyData.offset = original.offset;
-                        newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.Type = original.Type;
-                        break;
-                    }
-                case PropertyType.String:
-                    {
-                        newObj.propertyData = new StrPropertyData();
-                        StrPropertyData original = (StrPropertyData)gameObject.propertyData;
-                        newObj.propertyData.offset = original.offset;
-                        newObj.propertyData.calculated = IntPtr.Zero;
-                        newObj.propertyData.Type = original.Type;
-                        break;
-                    }
-                case PropertyType.Struct:
-                    {
-                        newObj.propertyData = new StructPropertyData();
-                        StructPropertyData newPD = (StructPropertyData)newObj.propertyData;
-                        StructPropertyData original = (StructPropertyData)gameObject.propertyData;
-                        newPD.offset = original.offset;
-                        newPD.calculated = IntPtr.Zero;
-                        newPD.Type = original.Type;
-                        newPD.structClassPtr = original.structClassPtr;
-                        newPD.size = original.size;
-                        newObj.propertyData = newPD;
-                        break;
-                    }
-                default:
-                    newObj.propertyData = new PropertyData();
-                    break;
-            }
+            newObj.propertyData = gameObject.propertyData.GetCopy();
 
             return newObj;
 

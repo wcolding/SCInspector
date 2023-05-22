@@ -1,13 +1,24 @@
-﻿namespace SCInspector.Unreal
+﻿using System.Drawing;
+
+namespace SCInspector.Unreal
 {
     public class PropertyData
     {
         public int offset = -1;
         public IntPtr calculated = IntPtr.Zero;
         public PropertyType Type;
+
         public virtual void SetData(IntPtr entry, GameOffsets offsets)
         {
             offset = (int)Memory.ReadUInt32(entry + offsets.PropertyOffset);
+        }
+
+        public virtual PropertyData GetCopy() 
+        {
+            PropertyData copy = new BytePropertyData();
+            copy.offset = offset;
+            copy.Type = Type;
+            return copy;
         }
     }
 
@@ -30,6 +41,20 @@
 
                 Memory.WriteUInt8(calculated, value);
             }
+        }
+
+        public override void SetData(IntPtr entry, GameOffsets offsets)
+        {
+            Type = PropertyType.Byte;
+            base.SetData(entry, offsets);
+        }
+
+        public override PropertyData GetCopy()
+        {
+            BytePropertyData copy = new BytePropertyData();
+            copy.offset = offset;
+            copy.Type = Type;
+            return copy;
         }
     }
 
@@ -66,8 +91,17 @@
 
         public override void SetData(IntPtr entry, GameOffsets offsets)
         {
+            Type = PropertyType.Bool;
             bitmask  = Memory.ReadUInt32(entry + offsets.Bitmask);
             base.SetData(entry, offsets);
+        }
+
+        public override PropertyData GetCopy()
+        {
+            BoolPropertyData copy = new BoolPropertyData();
+            copy.offset = offset;
+            copy.Type = Type;
+            return copy;
         }
     }
 
@@ -91,9 +125,57 @@
                 Memory.WriteUInt32(calculated, (uint)value);
             }
         }
+
+        public override void SetData(IntPtr entry, GameOffsets offsets)
+        {
+            Type = PropertyType.Int;
+            base.SetData(entry, offsets);
+        }
+
+        public override PropertyData GetCopy()
+        {
+            IntPropertyData copy = new IntPropertyData();
+            copy.offset = offset;
+            copy.Type = Type;
+            return copy;
+        }
     }
 
-    public class NamePropertyData : IntPropertyData { }
+    public class NamePropertyData : PropertyData
+    {
+        public int value
+        {
+            get
+            {
+                if (calculated == IntPtr.Zero)
+                    return -1;
+
+                return (int)Memory.ReadUInt32(calculated);
+            }
+
+            set
+            {
+                if (calculated == IntPtr.Zero)
+                    return;
+
+                Memory.WriteUInt32(calculated, (uint)value);
+            }
+        }
+
+        public override void SetData(IntPtr entry, GameOffsets offsets)
+        {
+            Type = PropertyType.Name;
+            base.SetData(entry, offsets);
+        }
+
+        public override PropertyData GetCopy()
+        {
+            NamePropertyData copy = new NamePropertyData();
+            copy.offset = offset;
+            copy.Type = Type;
+            return copy;
+        }
+    }
 
     public class StrPropertyData : PropertyData
     {
@@ -119,8 +201,20 @@
 
                 return nullTArray;
             }
+        }
 
-            // set?
+        public override void SetData(IntPtr entry, GameOffsets offsets)
+        {
+            Type = PropertyType.String;
+            base.SetData(entry, offsets);
+        }
+
+        public override PropertyData GetCopy()
+        {
+            StrPropertyData copy = new StrPropertyData();
+            copy.offset = offset;
+            copy.Type = Type;
+            return copy;
         }
     }
 
@@ -144,6 +238,21 @@
                 Memory.WriteFloat(calculated, value);
             }
         }
+
+        public override void SetData(IntPtr entry, GameOffsets offsets)
+        {
+            Type = PropertyType.Float;
+            base.SetData(entry, offsets);
+        }
+
+
+        public override PropertyData GetCopy()
+        {
+            FloatPropertyData copy = new FloatPropertyData();
+            copy.offset = offset;
+            copy.Type = Type;
+            return copy;
+        }
     }
 
     public class ObjectPropertyData : PropertyData
@@ -166,6 +275,20 @@
                 Memory.WriteUInt32(calculated, (uint)value);
             }
         }
+
+        public override void SetData(IntPtr entry, GameOffsets offsets)
+        {
+            Type = PropertyType.Object;
+            base.SetData(entry, offsets);
+        }
+
+        public override PropertyData GetCopy()
+        {
+            ObjectPropertyData copy = new ObjectPropertyData();
+            copy.offset = offset;
+            copy.Type = Type;
+            return copy;
+        }
     }
 
     public class StructPropertyData : PropertyData
@@ -175,9 +298,20 @@
 
         public override void SetData(IntPtr entry, GameOffsets offsets)
         {
+            Type = PropertyType.Struct;
             size = (short)Memory.ReadUInt16(entry + offsets.Size); 
             structClassPtr = (IntPtr)Memory.ReadUInt32(entry + offsets.Struct);
             base.SetData(entry, offsets);
+        }
+
+        public override PropertyData GetCopy()
+        {
+            StructPropertyData copy = new StructPropertyData();
+            copy.offset = offset;
+            copy.Type = Type;
+            copy.structClassPtr = structClassPtr;
+            copy.size = size;
+            return copy;
         }
     }
 
@@ -192,6 +326,20 @@
 
                 return Memory.ReadStructure<TArray>(calculated);
             }
+        }
+
+        public override void SetData(IntPtr entry, GameOffsets offsets)
+        {
+            Type = PropertyType.Array;
+            base.SetData(entry, offsets);
+        }
+
+        public override PropertyData GetCopy()
+        {
+            ArrayPropertyData copy = new ArrayPropertyData();
+            copy.offset = offset;
+            copy.Type = Type;
+            return copy;
         }
     }
 }
