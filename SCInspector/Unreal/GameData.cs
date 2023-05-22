@@ -64,7 +64,7 @@
                 //ProgressUpdate.index = i;
 
                 curEntryIndex = (int)Memory.ReadUInt32(curEntry + Offsets.InternalIndex);
-                if (!objects.ContainsKey(curEntryIndex))
+                if (!objects.ContainsKey(curEntry))
                 {
                     curNameIndex = (int)Memory.ReadUInt32(curEntry + Offsets.FName);
                     if (curNameIndex > -1 && curNameIndex < gNamesArray.count)
