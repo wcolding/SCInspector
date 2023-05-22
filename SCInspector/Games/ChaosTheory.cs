@@ -18,32 +18,31 @@ namespace SCInspector.ChaosTheory
                 }
             }
         };
+
+        public static readonly GameOffsets Offsets = new GameOffsets()
+        {
+            String = 0x0C,
+            InternalIndex = 0x04,
+            LinkerLoad = 0x10,
+            Outer = 0x18,
+            FName = 0x20,
+            Class = 0x24,
+            SuperField = 0x28,
+            Size = 0x36,
+            PropertyOffset = 0x44,
+            Bitmask = 0x78,
+            Struct = 0x54
+        };
     }
 
     public class SC3GameData : GameData
     {
         public SC3GameData(GameInfo _info) : base(_info) { }
-
-        protected override void GetNames(TArray gNamesArray)
+        
+        public override void RefreshObjects()
         {
-            stringOffset = 0x0C;
-            base.GetNames(gNamesArray);
-        }
-
-        protected override void GetObjects(TArray gObjectsArray)
-        {
-            indexOffset = 0x04;
-            linkerLoadOffset = 0x10;
-            outerOffset = 0x18;
-            nameOffset = 0x20;
-            classOffset = 0x24;
-            superOffset = 0x28;
-            propertyOffset = 0x44;
-            structPropertySizeOffset = 0x36;
-            structTypeOffset = 0x54;
-            structNextPropertyOffset = 0x48;
-            bitmaskOffset = 0x78;
-            base.GetObjects(gObjectsArray);
+            Offsets = Data.Offsets;
+            base.RefreshObjects();
         }
     }
 }

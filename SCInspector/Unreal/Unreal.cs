@@ -32,6 +32,22 @@
         Instance
     }
 
+    public struct GameOffsets
+    {
+        public IntPtr String;
+        public IntPtr InternalIndex;
+        public IntPtr LinkerLoad;
+        public IntPtr Outer;
+        public IntPtr FName;
+        public IntPtr Class;
+        public IntPtr DName;
+        public IntPtr SuperField;
+        public IntPtr Size;
+        public IntPtr PropertyOffset;
+        public IntPtr Bitmask;
+        public IntPtr Struct;
+    }
+
     public struct GameObject
     {
         public string name;

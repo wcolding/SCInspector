@@ -4,7 +4,11 @@
     {
         public int offset = -1;
         public IntPtr calculated = IntPtr.Zero;
-        public PropertyType type;
+        public PropertyType Type;
+        public virtual void SetData(IntPtr entry, GameOffsets offsets)
+        {
+            offset = (int)Memory.ReadUInt32(entry + offsets.PropertyOffset);
+        }
     }
 
     public class BytePropertyData : PropertyData
@@ -58,6 +62,12 @@
 
                 Memory.WriteUInt32(calculated, newVal);
             }
+        }
+
+        public override void SetData(IntPtr entry, GameOffsets offsets)
+        {
+            bitmask  = Memory.ReadUInt32(entry + offsets.Bitmask);
+            base.SetData(entry, offsets);
         }
     }
 
@@ -162,6 +172,13 @@
     {
         public IntPtr structClassPtr;
         public short size = -1;
+
+        public override void SetData(IntPtr entry, GameOffsets offsets)
+        {
+            size = (short)Memory.ReadUInt16(entry + offsets.Size); 
+            structClassPtr = (IntPtr)Memory.ReadUInt32(entry + offsets.Struct);
+            base.SetData(entry, offsets);
+        }
     }
 
     public class ArrayPropertyData : PropertyData
