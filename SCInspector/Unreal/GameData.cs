@@ -80,7 +80,7 @@
                         else if (LEADEngine)
                         {
                             int classNameIndex = curNameIndex & 0x7FFFF;
-                            int instanceNum = ((curNameIndex - classNameIndex) >> 0x13) - 1;
+                            int instanceNum = (curNameIndex >> 0x13) - 1;
                             if (names.ContainsKey(classNameIndex))
                                 curObject.name = String.Format("{0}_{1}", names[classNameIndex], instanceNum.ToString());
                             else
