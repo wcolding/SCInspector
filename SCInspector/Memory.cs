@@ -7,6 +7,7 @@ using System.Text;
 
 namespace SCInspector
 {
+    #pragma warning disable IDE0049
     public static class Memory
     {
         #region PInvoke
@@ -183,7 +184,7 @@ namespace SCInspector
             WriteProcessMemory(ProcessHandle, offset, value, value.Length, out outputPtr);
         }
 
-        public static uint ReadUInt8(IntPtr offset)
+        public static byte ReadUInt8(IntPtr offset)
         {
             return ReadBytes(offset, 1)[0];
         }
@@ -193,22 +194,22 @@ namespace SCInspector
             WriteBytes(offset, new byte[] { value });
         }
 
-        public static ushort ReadUInt16(IntPtr offset)
+        public static UInt16 ReadUInt16(IntPtr offset)
         {
             return BitConverter.ToUInt16(ReadBytes(offset, 2), 0);
         }
 
-        public static void WriteUInt16(IntPtr offset, ushort value)
+        public static void WriteUInt16(IntPtr offset, UInt16 value)
         {
             WriteBytes(offset, BitConverter.GetBytes(value));
         }
 
-        public static uint ReadUInt32(IntPtr offset)
+        public static UInt32 ReadUInt32(IntPtr offset)
         {
             return BitConverter.ToUInt32(ReadBytes(offset, 4), 0);
         }
 
-        public static void WriteUInt32(IntPtr offset, uint value)
+        public static void WriteUInt32(IntPtr offset, UInt32 value)
         {
             WriteBytes(offset, BitConverter.GetBytes(value));
         }
