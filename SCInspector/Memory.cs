@@ -257,8 +257,7 @@ namespace SCInspector
         public static Dictionary<int, IntPtr> ReadTArray(TArray array)
         {
             Dictionary<int, IntPtr> dict = new Dictionary<int, IntPtr>();
-            byte[] buffer = new byte[array.count * 4];
-            ReadProcessMemory(ProcessHandle, array.contents, buffer, buffer.Length, out outputPtr);
+            byte[] buffer = ReadBytes(array.contents, array.count * 4);
             IntPtr curPtr;
 
             for (int i = 0; i < array.count; i++)
