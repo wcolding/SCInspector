@@ -147,6 +147,16 @@ namespace SCInspector
                                 RecalculateInstanceProperties();
                                 break;
                             }
+                        case PropertyType.Object:
+                            {
+                                ObjectPropertyData asObj = (ObjectPropertyData)property.Value.propertyData;
+                                if (asObj.value != IntPtr.Zero)
+                                {
+                                    ClassViewerForm form = new ClassViewerForm(asObj.value, this.gameData);
+                                    form.Show();
+                                }
+                                break;
+                            }
                         default:
                             break;
                     }
